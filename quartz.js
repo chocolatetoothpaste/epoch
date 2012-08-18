@@ -1,9 +1,44 @@
 window.Quartz = {
+	format: function( str ) {
+		var len = str.length;
+		var ret = '';
+
+		for( var ii = 0; ii < len; ++ii )
+			ret += ( this._format[ str[ii] ] != undefined
+				? this._format[ str[ii] ]()
+				: str[ii] );
+
+		return ret;
+	},
+
+	modify: function( str ) {
+		var m = /(\+\d*|\-\d*|next|last)?\s+(day|week|month|year)s?/gi.exec(str);
+		m.splice( 0, 1 );
+
+		if( m[0] == 'next' || /(\-|\+)\d*/g.test( m[0] ) || m[0] == 'last' ) {
+			var inc = ( isNaN( parseInt( m[0] ) ) ? 1 : parseInt( m[0] ) );
+
+			if( m[0] == 'last' )
+				inc = -1;
+
+			if( m[1] == 'day' )
+				Quartz.d().setDate( Quartz.d() + inc );
+			else if( m[1] == 'month' )
+				Quartz.d().setMonth( Quartz.month() + inc );
+			else if( m[1] == 'week' )
+				// no use calculating 7*24*60*60 every time; 604800 = 1 week
+				Quartz.d().setTime( Quartz.d().getTime()
+					+ ( 604800 * inc ) );
+			else if( m[1] == 'year' )
+				Quartz.d().setFullYear( Quartz.year() + inc );
+
+		}
+
+		return this;
+	},
 
 	zero: function( v ) {
-		if( v < 10 )
-			v = '0' + v;
-		return v;
+		return ( v < 10 ? '0' + v : v );
 	},
 
 	// collection of functions to calculate and return specific formats
@@ -16,7 +51,8 @@ window.Quartz = {
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return this.a().toUpperCase();
+			return ( Quartz.hour() > 11
+				? 'pm' : 'am' ).toUpperCase();
 		},
 
 		// A textual representation of a day, three letters
@@ -93,13 +129,13 @@ window.Quartz = {
 
 		// Numeric representation of a month, with leading zeros
 		m: function() {
-			var m = Quartz.month() + 1;
+			var m = Quartz.month() ;
 			return Quartz.zero( m );
 		},
 
 		//Numeric representation of a month, without leading zeros
 		n: function() {
-			return Quartz.month() + 1;
+			return Quartz.month();
 		},
 
 		// RFC 1123 formatted date
@@ -160,43 +196,6 @@ window.Quartz = {
 			return Math.ceil( ( Quartz.d() - f ) / 86400000 );
 		}
 	},
-	modify: function( str ) {
-		var m = /(\+\d*|\-\d*|next|last)?\s*(day|week|month|year)s?/gi.exec(str);
-		m.splice(0,1);
-
-		if( m[0] == 'next' || /(\-|\+)\d*/g.test( m[0] ) || m[0] == 'last' ) {
-			var inc = ( isNaN( parseInt( m[0] ) ) ? 1 : parseInt( m[0] ) );
-
-			if( m[0] == 'last' )
-				inc = -1;
-
-			if( m[1] == 'day' )
-				Quartz.d().setDate( Quartz.d() + inc );
-			else if( m[1] == 'month' )
-				Quartz.d().setMonth( Quartz.month() + inc );
-			else if( m[1] == 'week' )
-				// add 1 weeks worth of seconds (no use calculating 7*24*60*60 every time)
-				Quartz.d().setTime( Quartz.d().getTime()
-					+ ( 604800 * inc ) );
-			else if( m[1] == 'year' )
-				Quartz.d().setFullYear( Quartz.year() + inc );
-
-		}
-
-		return this;
-	},
-	format: function( str ) {
-		var len = str.length;
-		var ret = '';
-
-		for( var ii = 0; ii < len; ++ii ) {
-			ret += ( this._format[ str[ii] ] != undefined
-				? this._format[ str[ii] ]()
-				: str[ii] );
-		}
-
-		return ret;
-	},
 
 	/**
 	 * CACHE SECTION ***********************************************************
@@ -251,7 +250,7 @@ window.Quartz = {
 
 	month: function() {
 		if( ! this._month )
-			this._month = this.d().getMonth();
+			this._month = this.d().getMonth() + 1;
 		return this._month;
 	},
 
