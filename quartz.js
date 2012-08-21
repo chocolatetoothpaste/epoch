@@ -11,12 +11,22 @@ window.Quartz = {
 		return ret;
 	},
 
-	modify: function( str ) {
-		var m = /(\+\d*|\-\d*|next|last)?\s+(day|week|month|year)s?/gi.exec(str);
-		m.splice( 0, 1 );
+	reset: function() {
+		this._d = new Date();
+		this._date = this._day = this._week = this._month = this._year = null;
+		this._hour = this._min = this._sec = this._milli = this._time = null;
+	},
 
-		if( m[0] == 'next' || /(\-|\+)\d*/g.test( m[0] ) || m[0] == 'last' ) {
-			var inc = ( isNaN( parseInt( m[0] ) ) ? 1 : parseInt( m[0] ) );
+	modify: function( str ) {
+		var m = /(\+?\d*|\-\d*|next|last)?\s+(day|week|month|year)s?\s?(ago)*/gi.exec(str);
+		m.splice( 0, 1 );
+		var num = /(\-|\+?)\d*/g.test( m[0] );
+
+		if( m[0] == 'next' || num || m[0] == 'last' ) {
+			this.reset();
+			var inc = ( num ? parseInt( m[0] ) : 1 );
+			if( m[2] == 'ago' )
+				inc = -inc;
 
 			if( m[0] == 'last' )
 				inc = -1;
@@ -25,13 +35,13 @@ window.Quartz = {
 				Quartz.d().setDate( Quartz.d() + inc );
 			else if( m[1] == 'month' )
 				Quartz.d().setMonth( Quartz.month() + inc );
-			else if( m[1] == 'week' )
-				// no use calculating 7*24*60*60 every time; 604800 = 1 week
-				Quartz.d().setTime( Quartz.d().getTime()
-					+ ( 604800 * inc ) );
-			else if( m[1] == 'year' )
+			else if( m[1] == 'week' ){
+				// no use calculating 7*24*60*60*1000 every time;
+				// 604800000 = 1 week in milliseconds
+				Quartz.d().setTime( Quartz.time()
+					+ 604800000 * inc );
+			}else if( m[1] == 'year' )
 				Quartz.d().setFullYear( Quartz.year() + inc );
-
 		}
 
 		return this;
@@ -70,7 +80,7 @@ window.Quartz = {
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ Quartz.month() ];
+				'December' ][ Quartz.month() - 1 ];
 		},
 
 		// 24-hour format of an hour without leading zeros
@@ -103,7 +113,7 @@ window.Quartz = {
 
 		// Day of the month without leading zeros
 		j: function() {
-			return Quartz.d();
+			return Quartz.date();
 		},
 
 		// Whether it's a leap year
@@ -124,7 +134,7 @@ window.Quartz = {
 		// A short textual representation of a month, three letters
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() ];
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
@@ -211,6 +221,7 @@ window.Quartz = {
 	_sec: null,
 	_milli: null,
 	_year: null,
+	_time: null,
 
 	d: function() {
 		if( ! this._d )
@@ -264,5 +275,11 @@ window.Quartz = {
 		if( ! this._day )
 			this._day = this.d().getDay();
 		return this._day;
+	},
+
+	time: function() {
+		if( ! this._time )
+			this._time = this.d().getTime();
+		return this._time;
 	}
 };
