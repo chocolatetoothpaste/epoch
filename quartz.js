@@ -15,33 +15,43 @@ window.Quartz = {
 		this._d = new Date();
 		this._date = this._day = this._week = this._month = this._year = null;
 		this._hour = this._min = this._sec = this._milli = this._time = null;
+
+		return this;
 	},
 
 	modify: function( str ) {
-		var m = /(\+?\d*|\-\d*|next|last)?\s+(day|week|month|year)s?\s?(ago)*/gi.exec(str);
+		// search for relative statements like:
+		// +/- x week(s), last/next month, x week(s) ago
+		var m = /(\+?\d*|\-\d*|next|last)?\s+(day|week|month|year)s?\s?(ago)*/gi
+			.exec( str );
 		m.splice( 0, 1 );
+
+		// test if the relative time is numeric
 		var num = /(\-|\+?)\d*/g.test( m[0] );
 
 		if( m[0] == 'next' || num || m[0] == 'last' ) {
+			// reset everything so day/month/year/etc doesn't return cached values
 			this.reset();
-			var inc = ( num ? parseInt( m[0] ) : 1 );
-			if( m[2] == 'ago' )
-				inc = -inc;
+
+			var rel = ( num ? parseInt( m[0] ) : 1 );
 
 			if( m[0] == 'last' )
-				inc = -1;
+				rel = -1;
+
+			// if ago is found, make rel negative so it is subtracted
+			if( m[2] == 'ago' )
+				rel = -rel;
 
 			if( m[1] == 'day' )
-				Quartz.d().setDate( Quartz.d() + inc );
+				Quartz.d().setDate( Quartz.d() + rel );
 			else if( m[1] == 'month' )
-				Quartz.d().setMonth( Quartz.month() + inc );
-			else if( m[1] == 'week' ){
+				Quartz.d().setMonth( Quartz.month() + rel );
+			else if( m[1] == 'week' )
 				// no use calculating 7*24*60*60*1000 every time;
 				// 604800000 = 1 week in milliseconds
-				Quartz.d().setTime( Quartz.time()
-					+ 604800000 * inc );
-			}else if( m[1] == 'year' )
-				Quartz.d().setFullYear( Quartz.year() + inc );
+				Quartz.d().setTime( Quartz.time() + ( 604800000 * rel ) );
+			else if( m[1] == 'year' )
+				Quartz.d().setFullYear( Quartz.year() + rel );
 		}
 
 		return this;
