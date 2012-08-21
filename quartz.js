@@ -57,11 +57,12 @@ window.Quartz = {
 		return this;
 	},
 
-	zero: function( v ) {
-		return ( v < 10 ? '0' + v : v );
+	// zero pad numbers less than 10
+	zero: function( num ) {
+		return ( num < 10 ? '0' + num : num );
 	},
 
-	// collection of functions to calculate and return specific formats
+	// collection of functions to calculate and return date formats
 	_format: {
 		// Lowercase Ante meridiem and Post meridiem
 		a: function() {
@@ -90,7 +91,7 @@ window.Quartz = {
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ Quartz.month() - 1 ];
+				'December' ][ Quartz.month() ];
 		},
 
 		// 24-hour format of an hour without leading zeros
@@ -117,8 +118,7 @@ window.Quartz = {
 
 		// Minutes with leading zeros
 		i: function() {
-			var m = Quartz.min();
-			return Quartz.zero( m );
+			return Quartz.zero( Quartz.min() );
 		},
 
 		// Day of the month without leading zeros
@@ -144,18 +144,19 @@ window.Quartz = {
 		// A short textual representation of a month, three letters
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() - 1 ];
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() ];
 		},
 
 		// Numeric representation of a month, with leading zeros
 		m: function() {
-			var m = Quartz.month() ;
-			return Quartz.zero( m );
+			// month + 1, js returns month - 1; jan = 0 - dec = 11
+			return Quartz.zero( Quartz.month() + 1 );
 		},
 
 		//Numeric representation of a month, without leading zeros
 		n: function() {
-			return Quartz.month();
+			// month + 1, js returns month - 1; jan = 0 - dec = 11
+			return Quartz.month() + 1;
 		},
 
 		// RFC 1123 formatted date
@@ -187,9 +188,11 @@ window.Quartz = {
 			return Quartz.milli();
 		},
 
-		// ISO-8601 week number of year, weeks starting on Monday (added in PHP 4.1.0)
+		// ISO-8601 week number of year, weeks starting on Monday
 		W: function() {
-			var d = parseInt( Quartz.format('z') ) + Quartz.d();
+			var d = new Date( Quartz.year(), 0, 1 );
+			d = Math.ceil( ( Quartz.d() - d ) / 86400000 );
+			d += Quartz.date();
 			d -= Quartz.day() + 10;
 			return Math.floor( d / 7 );
 		},
@@ -206,8 +209,7 @@ window.Quartz = {
 
 		// A two digit representation of a year
 		y: function() {
-			return parseInt( Quartz.year()
-				.toString().substr(-2) );
+			return parseInt( Quartz.year().toString().substr(-2) );
 		},
 
 		// The day of the year (starting from 0)
@@ -219,6 +221,7 @@ window.Quartz = {
 
 	/**
 	 * CACHE SECTION ***********************************************************
+	 * here be lizards... changing below this line could break things, careful
 	 */
 
 	_d: null,
@@ -271,8 +274,8 @@ window.Quartz = {
 
 	month: function() {
 		if( ! this._month )
-			// +1 because js returns (month - 1): jan = 0, dec = 11
-			this._month = this.d().getMonth() + 1;
+			// use caution, js returns (month - 1): jan = 0, dec = 11
+			this._month = this.d().getMonth();
 		return this._month;
 	},
 
