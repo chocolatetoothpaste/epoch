@@ -271,6 +271,7 @@ window.Quartz = {
 
 	month: function() {
 		if( ! this._month )
+			// +1 because js returns (month - 1): jan = 0, dec = 11
 			this._month = this.d().getMonth() + 1;
 		return this._month;
 	},
