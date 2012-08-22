@@ -42,16 +42,20 @@ window.Quartz = {
 			if( m[2] == 'ago' )
 				rel = -rel;
 
+			// calling the native "get" methods because calling .month(), etc
+			// was causing the _month, etc to get cached and not work properly
 			if( m[1] == 'day' )
-				Quartz.d().setDate( Quartz.d() + rel );
+				Quartz.d().setDate( Quartz.d.getDate() + rel );
 			else if( m[1] == 'month' )
-				Quartz.d().setMonth( Quartz.month() + rel );
+				Quartz.d().setMonth( Quartz.d().getMonth() + rel );
 			else if( m[1] == 'week' )
 				// no use calculating 7*24*60*60*1000 every time;
 				// 604800000 = 1 week in milliseconds
-				Quartz.d().setTime( Quartz.time() + ( 604800000 * rel ) );
+				Quartz.d().setTime( Quartz.d().getTime() + ( 604800000 * rel ) );
 			else if( m[1] == 'year' )
-				Quartz.d().setFullYear( Quartz.year() + rel );
+				Quartz.d().setFullYear( Quartz.d().getYear() + rel );
+
+			console.log(Quartz.month());
 		}
 
 		return this;
