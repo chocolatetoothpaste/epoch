@@ -27,7 +27,7 @@ window.Quartz = {
 		m.splice( 0, 1 );
 
 		// test if the relative time is numeric
-		var num = /(\-|\+?)\d*/g.test( m[0] );
+		var num = /(\-|\+)?\d+/.test( m[0] );
 
 		if( m[0] == 'next' || num || m[0] == 'last' ) {
 			// reset everything so day/month/year/etc doesn't return cached values
@@ -53,9 +53,8 @@ window.Quartz = {
 				// 604800000 = 1 week in milliseconds
 				Quartz.d().setTime( Quartz.d().getTime() + ( 604800000 * rel ) );
 			else if( m[1] == 'year' )
-				Quartz.d().setFullYear( Quartz.d().getYear() + rel );
+				Quartz.d().setFullYear( Quartz.d().getFullYear() + rel );
 
-			console.log(Quartz.month());
 		}
 
 		return this;
