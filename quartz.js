@@ -76,7 +76,7 @@ window.Quartz = {
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
 			return ( Quartz.hour() > 11
-				? 'pm' : 'am' ).toUpperCase();
+				? 'PM' : 'AM' );
 		},
 
 		// A textual representation of a day, three letters
@@ -92,7 +92,7 @@ window.Quartz = {
 
 		// A full textual representation of a month, such as January or March
 		F: function() {
-			return [ 'January', 'February', 'March', 'April', 'May', 'June',
+			return [ '', 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
 				'December' ][ Quartz.month() ];
 		},
@@ -146,20 +146,18 @@ window.Quartz = {
 
 		// A short textual representation of a month, three letters
 		M: function() {
-			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
+			return [ '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
 				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() ];
 		},
 
 		// Numeric representation of a month, with leading zeros
 		m: function() {
-			// month + 1, js returns month - 1; jan = 0 - dec = 11
-			return Quartz.zero( Quartz.month() + 1 );
+			return Quartz.zero( Quartz.month() );
 		},
 
 		//Numeric representation of a month, without leading zeros
 		n: function() {
-			// month + 1, js returns month - 1; jan = 0 - dec = 11
-			return Quartz.month() + 1;
+			return Quartz.month();
 		},
 
 		// RFC 1123 formatted date
@@ -277,8 +275,9 @@ window.Quartz = {
 
 	month: function() {
 		if( ! this._month )
-			// use caution, js returns (month - 1): jan = 0, dec = 11
-			this._month = this.d().getMonth();
+			// js returns jan = 0, dec = 11 so add 1 (because most people will
+			// end up doing this anyway, and most other languages will too)
+			this._month = this.d().getMonth() + 1;
 		return this._month;
 	},
 
