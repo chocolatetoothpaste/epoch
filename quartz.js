@@ -92,9 +92,9 @@ window.Quartz = {
 
 		// A full textual representation of a month, such as January or March
 		F: function() {
-			return [ '', 'January', 'February', 'March', 'April', 'May', 'June',
+			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ Quartz.month() ];
+				'December' ][ Quartz.month() - 1 ];
 		},
 
 		// 24-hour format of an hour without leading zeros
@@ -146,8 +146,8 @@ window.Quartz = {
 
 		// A short textual representation of a month, three letters
 		M: function() {
-			return [ '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() ];
+			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
@@ -275,8 +275,8 @@ window.Quartz = {
 
 	month: function() {
 		if( ! this._month )
-			// js returns jan = 0, dec = 11 so add 1 (because most people will
-			// end up doing this anyway, and most other languages will too)
+			// js returns jan = 0, dec = 11 so add 1 (because most programmers
+			// will end up doing this anyway, and most other languages do too)
 			this._month = this.d().getMonth() + 1;
 		return this._month;
 	},
