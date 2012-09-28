@@ -28,6 +28,7 @@ window.Quartz = {
 
 		// test if the relative time is numeric
 		var num = /(\-|\+)?\d+/.test( m[0] );
+		var unit = m[1];
 
 		if( m[0] == 'next' || num || m[0] == 'last' ) {
 			// reset everything so day/month/year/etc doesn't return cached values
@@ -44,16 +45,18 @@ window.Quartz = {
 
 			// calling the native "get" methods because calling .month(), etc
 			// was causing the _month, etc to get cached and not work properly
-			if( m[1] == 'day' )
-				Quartz.d().setDate( Quartz.d.getDate() + rel );
-			else if( m[1] == 'month' )
+			if( unit == 'day' )
+				Quartz.d().setDate( Quartz.d().getDate() + rel );
+			else if( unit == 'month' )
 				Quartz.d().setMonth( Quartz.d().getMonth() + rel );
-			else if( m[1] == 'week' )
+			else if( unit == 'week' )
 				// no use calculating 7*24*60*60*1000 every time;
 				// 604800000 = 1 week in milliseconds
 				Quartz.d().setTime( Quartz.d().getTime() + ( 604800000 * rel ) );
-			else if( m[1] == 'year' )
+			else if( unit == 'year' )
 				Quartz.d().setFullYear( Quartz.d().getFullYear() + rel );
+			else
+				throw "Unrecognized unit: " + unit;
 
 		}
 
@@ -80,17 +83,20 @@ window.Quartz = {
 		},
 
 		// A textual representation of a day, three letters
+		// ISO:
 		D: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
 				'Fri', 'Sat' ][ Quartz.day() ];
 		},
 
-		// Day of the month, 2 digits with leading zeros
+		// Day of the month with leading zeros
+		// ISO: DD
 		d: function() {
 			return Quartz.zero( Quartz.date() );
 		},
 
 		// A full textual representation of a month, such as January or March
+		// MMMM
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
@@ -98,33 +104,39 @@ window.Quartz = {
 		},
 
 		// 24-hour format of an hour without leading zeros
+		// h
 		G: function() {
 			return Quartz.hour();
 		},
 
 		// 12-hour format of an hour without leading zeros
+		// H
 		g: function() {
 			var h = Quartz.hour();
 			return ( h > 12 ? h -= 12 : h );
 		},
 
 		// 24-hour format of an hour with leading zeros
+		// hh
 		H: function() {
 			return Quartz.zero( Quartz.hour() );
 		},
 
 		// 12-hour format of an hour with leading zeros
+		// HH
 		h: function() {
 			var h = Quartz.hour();
 			return ( h > 12 ? h -= 12 : Quartz.zero( h ) );
 		},
 
 		// Minutes with leading zeros
+		// mm
 		i: function() {
 			return Quartz.zero( Quartz.min() );
 		},
 
 		// Day of the month without leading zeros
+		// D
 		j: function() {
 			return Quartz.date();
 		},
@@ -139,33 +151,39 @@ window.Quartz = {
 		},
 
 		// A full textual representation of the day of the week
+		// dddd
 		l: function() {
 			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
 				'Thursday', 'Friday', 'Saturday' ][ Quartz.day() ];
 		},
 
 		// A short textual representation of a month, three letters
+		// MMM
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
 				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
+		// ISO: MM
 		m: function() {
 			return Quartz.zero( Quartz.month() );
 		},
 
-		//Numeric representation of a month, without leading zeros
+		// Numeric representation of a month, without leading zeros
+		// M
 		n: function() {
 			return Quartz.month();
 		},
 
 		// RFC 1123 formatted date
+		// RFC1123
 		r: function() {
 			return Quartz.d().toUTCString();
 		},
 
 		// English ordinal suffix for the day of the month, 2 characters
+		// o
 		S: function() {
 			var j = Quartz.d();
 			if( j >= 11 && j <= 13 )
@@ -180,6 +198,7 @@ window.Quartz = {
 		},
 
 		// Seconds, with leading zeros
+		// ss
 		s: function() {
 			return Quartz.zero( Quartz.sec() );
 		},
@@ -190,6 +209,7 @@ window.Quartz = {
 		},
 
 		// ISO-8601 week number of year, weeks starting on Monday
+		// ISO: ww
 		W: function() {
 			var d = new Date( Quartz.year(), 0, 1 );
 			d = Math.ceil( ( Quartz.d() - d ) / 86400000 );
@@ -199,21 +219,25 @@ window.Quartz = {
 		},
 
 		// Numeric representation of the day of the week
+		// ddd
 		w: function() {
 			return Quartz.day();
 		},
 
 		// A full numeric representation of a year, 4 digits
+		// ISO: YYYY
 		Y: function() {
 			return Quartz.year();
 		},
 
 		// A two digit representation of a year
+		// YY
 		y: function() {
 			return parseInt( Quartz.year().toString().substr(-2) );
 		},
 
 		// The day of the year (starting from 0)
+		// DDD
 		z: function() {
 			var f = new Date( Quartz.year(), 0, 1 );
 			return Math.ceil( ( Quartz.d() - f ) / 86400000 );
