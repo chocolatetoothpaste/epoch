@@ -262,16 +262,18 @@ window.Quartz = {
 	_time: null,
 
 	d: function( format ) {
-		if( ! this._d || format != undefined ){
-			if( format != undefined ) {
-				var d = format.split(' ');
-				d[0] = d[0].split('-');
-				d[1] = d[1].split(':');
+		if( format !== undefined ) {
+			this.reset();
+			var d = format.split(' ');
+			d[0] = d[0].split('-');
+			d[1] = d[1].split(':');
 
-				this._d = new Date( d[0][0], d[0][1], d[0][2], d[1][0], d[1][1], d[1][2] );
-			}
-			else
-				this._d = new Date();
+			this._d = new Date( d[0][0], d[0][1] - 1, d[0][2], d[1][0], d[1][1], d[1][2] );
+		}
+
+		else if( this._d === null ) {
+			this.reset();
+			this._d = new Date();
 		}
 
 		return this._d;
