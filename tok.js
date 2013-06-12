@@ -1,4 +1,4 @@
-window.Quartz = {
+window.tok = {
 	format: function( str ) {
 		var len = str.length;
 		var ret = '';
@@ -11,8 +11,8 @@ window.Quartz = {
 		return ret;
 	},
 
-	reset: function() {
-		this._d = new Date();
+	reset: function(format) {
+		this._d = ( format ? new Date(format) : new Date() );
 		this._date = this._day = this._week = this._month = this._year = null;
 		this._hour = this._min = this._sec = this._milli = this._time = null;
 
@@ -46,15 +46,15 @@ window.Quartz = {
 			// calling the native "get" methods because calling .month(), etc
 			// was causing the _month, etc to get cached and not work properly
 			if( unit == 'day' )
-				Quartz.d().setDate( Quartz.d().getDate() + rel );
+				tok.d().setDate( tok.d().getDate() + rel );
 			else if( unit == 'month' )
-				Quartz.d().setMonth( Quartz.d().getMonth() + rel );
+				tok.d().setMonth( tok.d().getMonth() + rel );
 			else if( unit == 'week' )
 				// no use calculating 7*24*60*60*1000 every time;
 				// 604800000 = 1 week in milliseconds
-				Quartz.d().setTime( Quartz.d().getTime() + ( 604800000 * rel ) );
+				tok.d().setTime( tok.d().getTime() + ( 604800000 * rel ) );
 			else if( unit == 'year' )
-				Quartz.d().setFullYear( Quartz.d().getFullYear() + rel );
+				tok.d().setFullYear( tok.d().getFullYear() + rel );
 			else
 				throw "Unrecognized unit: " + unit;
 
@@ -64,7 +64,7 @@ window.Quartz = {
 	},
 
 	interval: function( date ) {
-		var interval, seconds = Math.floor( ( new Date() - this.d(date) ) / 1000 );
+		var interval, seconds = Math.floor( ( new Date() - this.reset(date) ) / 1000 );
 
 		interval = Math.floor(seconds / 31536000);
 		if (interval > 1) {
@@ -101,15 +101,55 @@ window.Quartz = {
 
 	// collection of functions to calculate and return date formats
 	_format: {
+
+/*
+			d = date[_ + "Date"](),
+			D = date[_ + "Day"](),
+			m = date[_ + "Month"](),
+			y = date[_ + "FullYear"](),
+			H = date[_ + "Hours"](),
+			M = date[_ + "Minutes"](),
+			s = date[_ + "Seconds"](),
+			L = date[_ + "Milliseconds"](),
+			o = utc ? 0 : date.getTimezoneOffset(),
+			flags = {
+				d:    d,
+				dd:   pad(d),
+				ddd:  dF.i18n.dayNames[D],
+				dddd: dF.i18n.dayNames[D + 7],
+				m:    m + 1,
+				mm:   pad(m + 1),
+				mmm:  dF.i18n.monthNames[m],
+				mmmm: dF.i18n.monthNames[m + 12],
+				yy:   String(y).slice(2),
+				yyyy: y,
+				h:    H % 12 || 12,
+				hh:   pad(H % 12 || 12),
+				H:    H,
+				HH:   pad(H),
+				M:    M,
+				MM:   pad(M),
+				s:    s,
+				ss:   pad(s),
+				l:    pad(L, 3),
+				L:    pad(L > 99 ? Math.round(L / 10) : L),
+				t:    H < 12 ? "a"  : "p",
+				tt:   H < 12 ? "am" : "pm",
+				T:    H < 12 ? "A"  : "P",
+				TT:   H < 12 ? "AM" : "PM",
+				Z:    utc ? "UTC" : (String(date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
+				o:    (o > 0 ? "-" : "+") + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+				S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]*/
+
 		// Lowercase Ante meridiem and Post meridiem
 		a: function() {
-			return ( Quartz.hour() > 11
+			return ( tok.hour() > 11
 				? 'pm' : 'am' );
 		},
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return ( Quartz.hour() > 11
+			return ( tok.hour() > 11
 				? 'PM' : 'AM' );
 		},
 
@@ -117,13 +157,13 @@ window.Quartz = {
 		// ISO:
 		D: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-				'Fri', 'Sat' ][ Quartz.day() ];
+				'Fri', 'Sat' ][ tok.day() ];
 		},
 
 		// Day of the month with leading zeros
 		// ISO: DD
 		d: function() {
-			return Quartz.zero( Quartz.date() );
+			return tok.zero( tok.date() );
 		},
 
 		// A full textual representation of a month, such as January or March
@@ -131,50 +171,50 @@ window.Quartz = {
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ Quartz.month() - 1 ];
+				'December' ][ tok.month() - 1 ];
 		},
 
 		// 24-hour format of an hour without leading zeros
 		// h
 		G: function() {
-			return Quartz.hour();
+			return tok.hour();
 		},
 
 		// 12-hour format of an hour without leading zeros
 		// H
 		g: function() {
-			var h = Quartz.hour();
+			var h = tok.hour();
 			return ( h > 12 ? h -= 12 : h );
 		},
 
 		// 24-hour format of an hour with leading zeros
 		// hh
 		H: function() {
-			return Quartz.zero( Quartz.hour() );
+			return tok.zero( tok.hour() );
 		},
 
 		// 12-hour format of an hour with leading zeros
 		// HH
 		h: function() {
-			var h = Quartz.hour();
-			return ( h > 12 ? h -= 12 : Quartz.zero( h ) );
+			var h = tok.hour();
+			return ( h > 12 ? h -= 12 : tok.zero( h ) );
 		},
 
 		// Minutes with leading zeros
 		// mm
 		i: function() {
-			return Quartz.zero( Quartz.min() );
+			return tok.zero( tok.min() );
 		},
 
 		// Day of the month without leading zeros
 		// D
 		j: function() {
-			return Quartz.date();
+			return tok.date();
 		},
 
 		// Whether it's a leap year
 		L: function() {
-			var y = Quartz.year();
+			var y = tok.year();
 			if( y % 4 == 0)
 				return ( y % 100 == 0 ? year % 400 == 0 : 1 );
 			else
@@ -185,38 +225,38 @@ window.Quartz = {
 		// dddd
 		l: function() {
 			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-				'Thursday', 'Friday', 'Saturday' ][ Quartz.day() ];
+				'Thursday', 'Friday', 'Saturday' ][ tok.day() ];
 		},
 
 		// A short textual representation of a month, three letters
 		// MMM
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ Quartz.month() - 1 ];
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ tok.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
 		// ISO: MM
 		m: function() {
-			return Quartz.zero( Quartz.month() );
+			return tok.zero( tok.month() );
 		},
 
 		// Numeric representation of a month, without leading zeros
 		// M
 		n: function() {
-			return Quartz.month();
+			return tok.month();
 		},
 
 		// RFC 1123 formatted date
 		// RFC1123
 		r: function() {
-			return Quartz.d().toUTCString();
+			return tok.d().toUTCString();
 		},
 
 		// English ordinal suffix for the day of the month, 2 characters
 		// o
 		S: function() {
-			var j = Quartz.d();
+			var j = tok.d();
 			if( j >= 11 && j <= 13 )
 				return "th";
 
@@ -231,47 +271,47 @@ window.Quartz = {
 		// Seconds, with leading zeros
 		// ss
 		s: function() {
-			return Quartz.zero( Quartz.sec() );
+			return tok.zero( tok.sec() );
 		},
 
 		// Milliseconds
 		u: function() {
-			return Quartz.milli();
+			return tok.milli();
 		},
 
 		// ISO-8601 week number of year, weeks starting on Monday
 		// ISO: ww
 		W: function() {
-			var d = new Date( Quartz.year(), 0, 1 );
-			d = Math.ceil( ( Quartz.d() - d ) / 86400000 );
-			d += Quartz.date();
-			d -= Quartz.day() + 10;
+			var d = new Date( tok.year(), 0, 1 );
+			d = Math.ceil( ( tok.d() - d ) / 86400000 );
+			d += tok.date();
+			d -= tok.day() + 10;
 			return Math.floor( d / 7 );
 		},
 
 		// Numeric representation of the day of the week
 		// ddd
 		w: function() {
-			return Quartz.day();
+			return tok.day();
 		},
 
 		// A full numeric representation of a year, 4 digits
 		// ISO: YYYY
 		Y: function() {
-			return Quartz.year();
+			return tok.year();
 		},
 
 		// A two digit representation of a year
 		// YY
 		y: function() {
-			return parseInt( Quartz.year().toString().substr(-2) );
+			return parseInt( tok.year().toString().substr(-2) );
 		},
 
 		// The day of the year (starting from 0)
 		// DDD
 		z: function() {
-			var f = new Date( Quartz.year(), 0, 1 );
-			return Math.ceil( ( Quartz.d() - f ) / 86400000 );
+			var f = new Date( tok.year(), 0, 1 );
+			return Math.ceil( ( tok.d() - f ) / 86400000 );
 		}
 	},
 
@@ -293,12 +333,8 @@ window.Quartz = {
 	_time: null,
 
 	d: function( format ) {
-		if( format !== undefined ) {
+		if( format ) {
 			this.reset();
-			var d = format.split(' ');
-			d[0] = d[0].split('-');
-			d[1] = d[1].split(':');
-
 			this._d = new Date( d[0][0], d[0][1] - 1, d[0][2], d[1][0], d[1][1], d[1][2] );
 		}
 
