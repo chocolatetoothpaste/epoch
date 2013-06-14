@@ -1,17 +1,10 @@
-/*
- * http://en.wikipedia.org/wiki/Tik-Tok_(Oz)
- */
-
-var tiktok = function(format) {
-	return new TikTok(format);
-}
-
-var TikTok = function(format){
+var Epoch = function(format){
 	this.version = '0.1';
 	this._d = ( format ? new Date(format) : new Date() );
+	this._format.parent = this;
 }
 
-TikTok.prototype = {
+Epoch.prototype = {
 	format: function( str ) {
 		var len = str.length;
 		var ret = '';
@@ -44,8 +37,6 @@ TikTok.prototype = {
 		var unit = m[1];
 
 		if( m[0] == 'next' || num || m[0] == 'last' ) {
-			// reset everything so day/month/year/etc doesn't return cached values
-			this.reset();
 
 			var rel = ( num ? parseInt( m[0] ) : 1 );
 
@@ -76,31 +67,31 @@ TikTok.prototype = {
 		return this;
 	},
 
-	interval: function( date ) {
-		var interval, seconds = Math.floor( ( new Date() - this.reset(date) ) / 1000 );
+	interval: function() {
+		var interval, seconds = Math.floor( ( new Date() - this._d ) / 1000 );
 
-		interval = Math.floor(seconds / 31536000);
-		if (interval > 1) {
+		interval = Math.floor( seconds / 31536000 );
+		if( interval > 1 ) {
 			return interval + " years";
 		}
 
-		interval = Math.floor(seconds / 2592000);
-		if (interval > 1) {
+		interval = Math.floor( seconds / 2592000 );
+		if( interval > 1 ) {
 			return interval + " months";
 		}
 
-		interval = Math.floor(seconds / 86400);
-		if (interval > 1) {
+		interval = Math.floor( seconds / 86400 );
+		if( interval > 1 ) {
 			return interval + " days";
 		}
 
-		interval = Math.floor(seconds / 3600);
-		if (interval > 1) {
+		interval = Math.floor( seconds / 3600 );
+		if( interval > 1 ) {
 			return interval + " hours";
 		}
 
-		interval = Math.floor(seconds / 60);
-		if (interval > 1) {
+		interval = Math.floor( seconds / 60 );
+		if( interval > 1 ) {
 			return interval + " minutes";
 		}
 
@@ -156,13 +147,13 @@ TikTok.prototype = {
 
 		// Lowercase Ante meridiem and Post meridiem
 		a: function() {
-			return ( this.hour() > 11
+			return ( this.parent.hour() > 11
 				? 'pm' : 'am' );
 		},
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return ( this.hour() > 11
+			return ( this.parent.hour() > 11
 				? 'PM' : 'AM' );
 		},
 
@@ -170,13 +161,13 @@ TikTok.prototype = {
 		// ISO:
 		D: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-				'Fri', 'Sat' ][ this.day() ];
+				'Fri', 'Sat' ][ this.parent.day() ];
 		},
 
 		// Day of the month with leading zeros
 		// ISO: DD
 		d: function() {
-			return this.zero( this.date() );
+			return this.parent.zero( this.parent.date() );
 		},
 
 		// A full textual representation of a month, such as January or March
@@ -184,50 +175,50 @@ TikTok.prototype = {
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ this.month() - 1 ];
+				'December' ][ this.parent.month() - 1 ];
 		},
 
 		// 24-hour format of an hour without leading zeros
 		// H
 		G: function() {
-			return this.hour();
+			return this.parent.hour();
 		},
 
 		// 12-hour format of an hour without leading zeros
 		// h
 		g: function() {
-			var h = this.hour();
+			var h = this.parent.hour();
 			return ( h > 12 ? h -= 12 : h );
 		},
 
 		// 24-hour format of an hour with leading zeros
 		// HH
 		H: function() {
-			return this.zero( this.hour() );
+			return this.parent.zero( this.parent.hour() );
 		},
 
 		// 12-hour format of an hour with leading zeros
 		// hh
 		h: function() {
-			var h = this.hour();
-			return ( h > 12 ? h -= 12 : this.zero( h ) );
+			var h = this.parent.hour();
+			return ( h > 12 ? h -= 12 : this.parent.zero( h ) );
 		},
 
 		// Minutes with leading zeros
 		// mm
 		i: function() {
-			return this.zero( this.min() );
+			return this.parent.zero( this.parent.min() );
 		},
 
 		// Day of the month without leading zeros
 		// D
 		j: function() {
-			return this.date();
+			return this.parent.date();
 		},
 
 		// Whether it's a leap year
 		L: function() {
-			var y = this.year();
+			var y = this.parent.year();
 			if( y % 4 == 0)
 				return ( y % 100 == 0 ? year % 400 == 0 : 1 );
 			else
@@ -238,38 +229,38 @@ TikTok.prototype = {
 		// dddd
 		l: function() {
 			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-				'Thursday', 'Friday', 'Saturday' ][ this.day() ];
+				'Thursday', 'Friday', 'Saturday' ][ this.parent.day() ];
 		},
 
 		// A short textual representation of a month, three letters
 		// MMM
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ this.month() - 1 ];
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ this.parent.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
 		// ISO: MM
 		m: function() {
-			return this.zero( this.month() );
+			return this.parent.zero( this.parent.month() );
 		},
 
 		// Numeric representation of a month, without leading zeros
 		// M
 		n: function() {
-			return this.month();
+			return this.parent.month();
 		},
 
 		// RFC 1123 formatted date
 		// RFC1123
 		r: function() {
-			return this._d.toUTCString();
+			return this.parent._d.toUTCString();
 		},
 
 		// English ordinal suffix for the day of the month, 2 characters
 		// o
 		S: function() {
-			var j = this._d;
+			var j = this.parent._d;
 			if( j >= 11 && j <= 13 )
 				return "th";
 
@@ -284,47 +275,48 @@ TikTok.prototype = {
 		// Seconds, with leading zeros
 		// ss
 		s: function() {
-			return this.zero( this.sec() );
+			return this.parent.zero( this.parent.sec() );
 		},
 
 		// Milliseconds
 		u: function() {
-			return this.milli();
+			return this.parent.milli();
 		},
 
 		// ISO-8601 week number of year, weeks starting on Monday
 		// ISO: ww
 		W: function() {
-			var d = new Date( this.year(), 0, 1 );
-			d = Math.ceil( ( this._d - d ) / 86400000 );
-			d += this.date();
-			d -= this.day() + 10;
+			var d = new Date( this.parent.year(), 0, 1 );
+			d = Math.ceil( ( this.parent._d - d ) / 86400000 );
+			d += this.parent.date();
+			d -= this.parent.day() + 10;
 			return Math.floor( d / 7 );
 		},
 
 		// Numeric representation of the day of the week
 		// ddd
 		w: function() {
-			return this.day();
+			return this.parent.day();
 		},
 
 		// A full numeric representation of a year, 4 digits
 		// ISO: YYYY
 		Y: function() {
-			return this.year();
+			console.log(this.parent);
+			return this.parent.year();
 		},
 
 		// A two digit representation of a year
 		// YY
 		y: function() {
-			return parseInt( this.year().toString().substr(-2) );
+			return parseInt( this.parent.year().toString().substr(-2) );
 		},
 
 		// The day of the year (starting from 0)
 		// DDD
 		z: function() {
-			var f = new Date( this.year(), 0, 1 );
-			return Math.ceil( ( this._d - f ) / 86400000 );
+			var f = new Date( this.parent.year(), 0, 1 );
+			return Math.ceil( ( this.parent._d - f ) / 86400000 );
 		}
 	},
 
@@ -345,47 +337,33 @@ TikTok.prototype = {
 	_year: null,
 	_time: null,
 
-	d: function( format ) {
-		if( format ) {
-			this.reset();
-			this._d = new Date( d[0][0], d[0][1] - 1, d[0][2], d[1][0], d[1][1], d[1][2] );
-		}
-
-		else if( this._d === null ) {
-			this.reset();
-			this._d = new Date();
-		}
-
-		return this._d;
-	},
-
 	date: function() {
 		if( ! this._date )
-			this._date = this.d().getDate();;
+			this._date = this._d.getDate();;
 		return this._date;
 	},
 
 	hour: function() {
 		if( ! this._hour )
-			this._hour = this.d().getHours();
+			this._hour = this._d.getHours();
 		return this._hour;
 	},
 
 	min: function() {
 		if( ! this._min )
-			this._min = this.d().getMinutes();
+			this._min = this._d.getMinutes();
 		return this._min;
 	},
 
 	sec: function() {
 		if( ! this._sec )
-			this._sec = this.d().getSeconds();
+			this._sec = this._d.getSeconds();
 		return this._sec;
 	},
 
 	milli: function() {
 		if( ! this._milli )
-			this._milli = this.d().getMilliseconds();
+			this._milli = this._d.getMilliseconds();
 		return this._milli;
 	},
 
@@ -393,25 +371,30 @@ TikTok.prototype = {
 		if( ! this._month )
 			// js returns jan = 0, dec = 11 so add 1 (because most programmers
 			// will end up doing this anyway, and most other languages do too)
-			this._month = this.d().getMonth() + 1;
+			this._month = this._d.getMonth() + 1;
 		return this._month;
 	},
 
 	year: function() {
 		if( ! this._year )
-			this._year = this.d().getFullYear();
+			this._year = this._d.getFullYear();
 		return this._year;
 	},
 
 	day: function() {
 		if( ! this._day )
-			this._day = this.d().getDay();
+			this._day = this._d.getDay();
 		return this._day;
 	},
 
 	time: function() {
 		if( ! this._time )
-			this._time = this.d().getTime();
+			this._time = this._d.getTime();
 		return this._time;
 	}
 };
+
+
+var epoch = function(format) {
+	return new Epoch(format);
+}
