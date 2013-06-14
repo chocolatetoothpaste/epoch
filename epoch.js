@@ -9,6 +9,12 @@ var Epoch = function(format){
 
 Epoch.prototype = {
 	format: function( str ) {
+
+		// this is the new format token matcher when the switch to ISO formats
+		// is made. it should end up being a lot faster than this one
+		// str.match(/(\w)\1*/g).filter(function(value, index, self) {
+		//	return self.indexOf(value) === index;
+		// });
 		var len = str.length;
 		var ret = '';
 
@@ -20,13 +26,13 @@ Epoch.prototype = {
 		return ret;
 	},
 
-	reset: function(format) {
+	/*reset: function(format) {
 		this._d = ( format ? new Date(format) : new Date() );
 		this._date = this._day = this._week = this._month = this._year = null;
 		this._hour = this._min = this._sec = this._milli = this._time = null;
 
 		return this;
-	},
+	},*/
 
 	modify: function( str ) {
 		// search for relative statements like:
@@ -70,35 +76,43 @@ Epoch.prototype = {
 		return this;
 	},
 
-	interval: function() {
-		var interval, seconds = Math.floor( ( new Date() - this._d ) / 1000 );
+	from: function( date ) {
+		var interval,
+			unit = '',
+			from = ( date ? new Date( date ) : new Date() )
+			diff = Math.floor( ( from - this._d ) / 1000 ),
+			seconds = Math.abs( diff );
 
-		interval = Math.floor( seconds / 31536000 );
-		if( interval > 1 ) {
-			return interval + " years";
+		if( seconds >= 31536000 ) {
+			interval = Math.floor( seconds / 31536000 );
+			unit = " year";
 		}
 
-		interval = Math.floor( seconds / 2592000 );
-		if( interval > 1 ) {
-			return interval + " months";
+		else if( seconds >= 2592000 ) {
+			interval = Math.floor( seconds / 2592000 );
+			unit = " month";
 		}
 
-		interval = Math.floor( seconds / 86400 );
-		if( interval > 1 ) {
-			return interval + " days";
+		else if( seconds >= 86400 ) {
+			interval = Math.floor( seconds / 86400 );
+			unit = " day";
 		}
 
-		interval = Math.floor( seconds / 3600 );
-		if( interval > 1 ) {
-			return interval + " hours";
+		else if( seconds >= 3600 ) {
+			interval = Math.floor( seconds / 3600 );
+			unit = " hour";
 		}
 
-		interval = Math.floor( seconds / 60 );
-		if( interval > 1 ) {
-			return interval + " minutes";
+		else if( seconds >= 60 ) {
+			interval = Math.floor( seconds / 60 );
+			unit = " minute";
 		}
+		else
+			interval = 'less than a minute';
 
-		return "less than a minute";
+		return interval + unit + ( interval > 1 ? 's ' : ' ' )
+			+ ( diff < 0 ? 'ago' : 'from now' );
+
 	},
 
 	// zero pad numbers less than 10
@@ -342,7 +356,7 @@ Epoch.prototype = {
 
 	date: function() {
 		if( ! this._date )
-			this._date = this._d.getDate();;
+			this._date = this._d.getDate();
 		return this._date;
 	},
 
@@ -372,8 +386,7 @@ Epoch.prototype = {
 
 	month: function() {
 		if( ! this._month )
-			// js returns jan = 0, dec = 11 so add 1 (because most programmers
-			// will end up doing this anyway, and most other languages do too)
+			// js returns jan = 0, dec = 11... don't know why
 			this._month = this._d.getMonth() + 1;
 		return this._month;
 	},

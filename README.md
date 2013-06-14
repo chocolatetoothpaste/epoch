@@ -10,5 +10,3 @@ Examples:
 	epoch.modify('+2 months').format('F');		// October
 	epoch.modify('next year').format('Y')			// 2013
 	epoch.year();									// 2012
-
-	epoch.d().setMonth(11);						// December; d() is native Date object and native function setMonth()
