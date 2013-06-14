@@ -1,3 +1,6 @@
+/*
+ * Simple, logical, wonderful
+ */
 var Epoch = function(format){
 	this.version = '0.1';
 	this._d = ( format ? new Date(format) : new Date() );
