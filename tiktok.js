@@ -2,7 +2,16 @@
  * http://en.wikipedia.org/wiki/Tik-Tok_(Oz)
  */
 
-window.tiktok = {
+var tiktok = function(format) {
+	return new TikTok(format);
+}
+
+var TikTok = function(format){
+	this.version = '0.1';
+	this._d = ( format ? new Date(format) : new Date() );
+}
+
+TikTok.prototype = {
 	format: function( str ) {
 		var len = str.length;
 		var ret = '';
@@ -50,15 +59,15 @@ window.tiktok = {
 			// calling the native "get" methods because calling .month(), etc
 			// was causing the _month, etc to get cached and not work properly
 			if( unit == 'day' )
-				tiktok.d().setDate( tiktok.d().getDate() + rel );
+				this._d.setDate( this._d.getDate() + rel );
 			else if( unit == 'month' )
-				tiktok.d().setMonth( tiktok.d().getMonth() + rel );
+				this._d.setMonth( this._d.getMonth() + rel );
 			else if( unit == 'week' )
 				// no use calculating 7*24*60*60*1000 every time;
 				// 604800000 = 1 week in milliseconds
-				tiktok.d().setTime( tiktok.d().getTime() + ( 604800000 * rel ) );
+				this._d.setTime( this._d.getTime() + ( 604800000 * rel ) );
 			else if( unit == 'year' )
-				tiktok.d().setFullYear( tiktok.d().getFullYear() + rel );
+				this._d.setFullYear( this._d.getFullYear() + rel );
 			else
 				throw "Unrecognized unit: " + unit;
 
@@ -147,13 +156,13 @@ window.tiktok = {
 
 		// Lowercase Ante meridiem and Post meridiem
 		a: function() {
-			return ( tiktok.hour() > 11
+			return ( this.hour() > 11
 				? 'pm' : 'am' );
 		},
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return ( tiktok.hour() > 11
+			return ( this.hour() > 11
 				? 'PM' : 'AM' );
 		},
 
@@ -161,13 +170,13 @@ window.tiktok = {
 		// ISO:
 		D: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-				'Fri', 'Sat' ][ tiktok.day() ];
+				'Fri', 'Sat' ][ this.day() ];
 		},
 
 		// Day of the month with leading zeros
 		// ISO: DD
 		d: function() {
-			return tiktok.zero( tiktok.date() );
+			return this.zero( this.date() );
 		},
 
 		// A full textual representation of a month, such as January or March
@@ -175,50 +184,50 @@ window.tiktok = {
 		F: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
-				'December' ][ tiktok.month() - 1 ];
+				'December' ][ this.month() - 1 ];
 		},
 
 		// 24-hour format of an hour without leading zeros
-		// h
+		// H
 		G: function() {
-			return tiktok.hour();
+			return this.hour();
 		},
 
 		// 12-hour format of an hour without leading zeros
-		// H
+		// h
 		g: function() {
-			var h = tiktok.hour();
+			var h = this.hour();
 			return ( h > 12 ? h -= 12 : h );
 		},
 
 		// 24-hour format of an hour with leading zeros
-		// hh
+		// HH
 		H: function() {
-			return tiktok.zero( tiktok.hour() );
+			return this.zero( this.hour() );
 		},
 
 		// 12-hour format of an hour with leading zeros
-		// HH
+		// hh
 		h: function() {
-			var h = tiktok.hour();
-			return ( h > 12 ? h -= 12 : tiktok.zero( h ) );
+			var h = this.hour();
+			return ( h > 12 ? h -= 12 : this.zero( h ) );
 		},
 
 		// Minutes with leading zeros
 		// mm
 		i: function() {
-			return tiktok.zero( tiktok.min() );
+			return this.zero( this.min() );
 		},
 
 		// Day of the month without leading zeros
 		// D
 		j: function() {
-			return tiktok.date();
+			return this.date();
 		},
 
 		// Whether it's a leap year
 		L: function() {
-			var y = tiktok.year();
+			var y = this.year();
 			if( y % 4 == 0)
 				return ( y % 100 == 0 ? year % 400 == 0 : 1 );
 			else
@@ -229,38 +238,38 @@ window.tiktok = {
 		// dddd
 		l: function() {
 			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-				'Thursday', 'Friday', 'Saturday' ][ tiktok.day() ];
+				'Thursday', 'Friday', 'Saturday' ][ this.day() ];
 		},
 
 		// A short textual representation of a month, three letters
 		// MMM
 		M: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ tiktok.month() - 1 ];
+				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ this.month() - 1 ];
 		},
 
 		// Numeric representation of a month, with leading zeros
 		// ISO: MM
 		m: function() {
-			return tiktok.zero( tiktok.month() );
+			return this.zero( this.month() );
 		},
 
 		// Numeric representation of a month, without leading zeros
 		// M
 		n: function() {
-			return tiktok.month();
+			return this.month();
 		},
 
 		// RFC 1123 formatted date
 		// RFC1123
 		r: function() {
-			return tiktok.d().toUTCString();
+			return this._d.toUTCString();
 		},
 
 		// English ordinal suffix for the day of the month, 2 characters
 		// o
 		S: function() {
-			var j = tiktok.d();
+			var j = this._d;
 			if( j >= 11 && j <= 13 )
 				return "th";
 
@@ -275,47 +284,47 @@ window.tiktok = {
 		// Seconds, with leading zeros
 		// ss
 		s: function() {
-			return tiktok.zero( tiktok.sec() );
+			return this.zero( this.sec() );
 		},
 
 		// Milliseconds
 		u: function() {
-			return tiktok.milli();
+			return this.milli();
 		},
 
 		// ISO-8601 week number of year, weeks starting on Monday
 		// ISO: ww
 		W: function() {
-			var d = new Date( tiktok.year(), 0, 1 );
-			d = Math.ceil( ( tiktok.d() - d ) / 86400000 );
-			d += tiktok.date();
-			d -= tiktok.day() + 10;
+			var d = new Date( this.year(), 0, 1 );
+			d = Math.ceil( ( this._d - d ) / 86400000 );
+			d += this.date();
+			d -= this.day() + 10;
 			return Math.floor( d / 7 );
 		},
 
 		// Numeric representation of the day of the week
 		// ddd
 		w: function() {
-			return tiktok.day();
+			return this.day();
 		},
 
 		// A full numeric representation of a year, 4 digits
 		// ISO: YYYY
 		Y: function() {
-			return tiktok.year();
+			return this.year();
 		},
 
 		// A two digit representation of a year
 		// YY
 		y: function() {
-			return parseInt( tiktok.year().toString().substr(-2) );
+			return parseInt( this.year().toString().substr(-2) );
 		},
 
 		// The day of the year (starting from 0)
 		// DDD
 		z: function() {
-			var f = new Date( tiktok.year(), 0, 1 );
-			return Math.ceil( ( tiktok.d() - f ) / 86400000 );
+			var f = new Date( this.year(), 0, 1 );
+			return Math.ceil( ( this._d - f ) / 86400000 );
 		}
 	},
 
