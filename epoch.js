@@ -2,70 +2,29 @@
  * Simple, logical, wonderful
  */
 
+// constructor, I love you!
 var Epoch = function(format){
 	this.version = '0.1';
 	this._d = ( format ? new Date(format) : new Date() );
 	this._format.parent = this;
 }
 
+// prototype = sexy
 Epoch.prototype = {
 	format: function( str ) {
 
 		var f = this._format;
 
-		// this is the new format token matcher when the switch to ISO formats
-		// is made. it should end up being a lot faster than this one
-		var tok = str.match(/(\w)\1*/g).filter(function(value, index, self) {
-			return self.indexOf(value) === index;
-		});
+		return str.replace(/(\[.*)?(\w)\2*(o)?(?!\])/g, function( $0, $1, $2, $3 ) {
+			if( $3 === 'o' )
+				$0 = $0.replace('o', '');
 
+			if( ! $1 )
+				return ( $3 === 'o' ? f._o(f[$0]()) : f[$0]() );
+			else
+				return $0;
+		}).replace(/\[|\]/g, '');
 
-		for( token in tok ) {
-			if( typeof f[tok[token]] === 'function' ) {
-				var t = tok[token][0];
-
-				// the first group is to mimick lookbehind because JS doesn't
-				// have support for it (WTFF!!)
-
-				// need to get this section working, it is one complicated expression
-				/* var patt = new RegExp('(\\[).*?(' + t + ')?(' + tok[token] + ')(?!' + t + ')(o?)(?!\\])?', 'g');
-
-				str = str.replace(patt, function( $0, $1, $2, $3, $4 ) {
-					console.log($1);
-					if( ! $1 ) {
-						// var ret = ( $1 ? $0 : f[tok[token]]() );
-						var ret = ( $2 ? $0 : f[tok[token]]() );
-						return ret;
-						// ret = ( $1 ? $0 : ret );
-						// return ( $4 === 'o' ? f._o(ret) : ret );
-					}
-				});*/
-
-				var patt = new RegExp('(' + t + ')?(' + tok[token] + ')(?!' + t + ')(o?)', 'g');
-
-				str = str.replace(patt, function( $0, $1, $2, $3, $4 ) {
-					var ret = ( $1 ? $0 : f[tok[token]]() );
-					return ( $4 === 'o' ? f._o(ret) : ret );
-				});
-			}
-		}
-
-		return str;
-
-		/*var flags = Object.getOwnPropertyNames( f ).filter( function( property ) {
-			return typeof f[property] == 'function';
-		});
-
-		// console.log(flags);
-		var len = str.length;
-		var ret = '';
-
-		for( var ii = 0; ii < len; ++ii )
-			ret += ( this._format[ str[ii] ] != undefined
-				? this._format[ str[ii] ]()
-				: str[ii] );
-
-		return ret;*/
 	},
 
 	strftime: function(str) {
@@ -87,28 +46,32 @@ Epoch.prototype = {
 
 	},
 
-	/*reset: function(format) {
-		this._d = ( format ? new Date(format) : new Date() );
+	clear: function() {
+		// this._d = ( format ? new Date(format) : new Date() );
 		this._date = this._day = this._week = this._month = this._year = null;
 		this._hour = this._min = this._sec = this._milli = this._time = null;
 
 		return this;
-	},*/
+	},
+
+	/*
+	 * This was a great function, but is ultimately far too interpretive to be
+	 * reliable or practical to the end user
 
 	modify: function( str ) {
+		this.clear();
 		// search for relative statements like:
 		// +/- x week(s), last/next month, x week(s) ago
-		var m = /(\+?\d*|\-\d*|next|last)?\s+(day|week|month|year)s?\s?(ago)*/gi
-			.exec( str );
+		var m = this._rel_exp.exec( str );
 		m.splice( 0, 1 );
 
 		// test if the relative time is numeric
-		var num = /(\-|\+)?\d+/.test( m[0] );
+		var num = parseInt( m[0] );
 		var unit = m[1];
 
-		if( m[0] == 'next' || num || m[0] == 'last' ) {
+		if( m[0] == 'next' || ! isNaN(num) || m[0] == 'last' ) {
 
-			var rel = ( num ? parseInt( m[0] ) : 1 );
+			var rel = ( num || m[2] === 'from now' ? parseInt( m[0] ) : 1 );
 
 			if( m[0] == 'last' )
 				rel = -1;
@@ -135,13 +98,20 @@ Epoch.prototype = {
 		}
 
 		return this;
-	},
+	},*/
 
-	from: function( date ) {
+
+	// yeah, my function is better... way better
+
+	from: function( date, rel ) {
+		rel = rel || { pre: 'in ', suf: ' ago' };
+
 		var interval, unit = '',
 			from = ( date ? new Date( date ) : new Date() )
 			diff = Math.floor( ( from - this._d ) / 1000 ),
 			seconds = Math.abs( diff );
+
+		delete from, date;
 
 		if( seconds >= 31536000 ) {
 			interval = Math.floor( seconds / 31536000 );
@@ -167,6 +137,7 @@ Epoch.prototype = {
 			interval = Math.floor( seconds / 60 );
 			unit = " minute";
 		}
+
 		else
 			interval = 'less than a minute';
 
@@ -176,18 +147,14 @@ Epoch.prototype = {
 
 		// check if the date is a value in the past or future
 		if( diff > 0 )
-			interval = 'in ' + interval;
+			interval = rel.pre + interval;
 		else
-			unit += ' ago';
+			unit += rel.suf;
 
 		return interval + unit;
 
 	},
 
-	// zero pad numbers less than 10
-	zero: function( num ) {
-		return ( num < 10 ? '0' + num : num );
-	},
 
 	// collection of functions to calculate and return date formats
 	_format: {
@@ -243,14 +210,12 @@ Epoch.prototype = {
 				? 'PM' : 'AM' );
 		},
 
-
 		// Numeric representation of the day of the week, 0 - 6 : Sun - Sat
 		d: function() {
 			return this.parent.day();
 		},
 
 		// A textual representation of a day, three letters
-		// ISO:
 		ddd: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
 				'Fri', 'Sat' ][ this.parent.day() ];
@@ -268,13 +233,13 @@ Epoch.prototype = {
 		},
 
 		// Day of the month with leading zeros
-		// ISO: DD
 		DD: function() {
-			return this.parent.zero( this.parent.date() );
+			// console.log(typeof this.parent._d.getDate())
+			return this.parent._d.getDate();
+			// return this.parent.zero( this.parent.date() );
 		},
 
 		// The day of the year (starting from 0)
-		// DDD
 		DDD: function() {
 			var f = new Date( this.parent.year(), 0, 1 );
 			return Math.ceil( ( this.parent._d - f ) / 86400000 );
@@ -292,16 +257,15 @@ Epoch.prototype = {
 		},
 
 		// 24-hour format of an hour with leading zeros
-		// hh
 		hh: function() {
-			return this.parent.zero( this.parent.hour() );
+			var hh = this.parent.hour();
+			return ( hh < 10 ? '0' + hh : hh );
 		},
 
 		// 12-hour format of an hour with leading zeros
-		// HH
 		HH: function() {
 			var h = this.parent.hour();
-			return ( h > 12 ? h -= 12 : this.parent.zero( h ) );
+			return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 		},
 
 		// Whether it's a leap year
@@ -314,34 +278,29 @@ Epoch.prototype = {
 		},
 
 		// Minutes with leading zeros
-		// mm
 		mm: function() {
-			return this.parent.zero( this.parent.min() );
+			var mm = this.parent.min();
+			return ( mm < 10 ? '0' + mm : mm );
 		},
 
-
 		// Numeric representation of a month, without leading zeros
-		// M
 		M: function() {
 			return this.parent.month();
 		},
 
 		// Numeric representation of a month, with leading zeros
-		// ISO: MM
-		// m: function() {
 		MM: function() {
-			return this.parent.zero( this.parent.month() );
+			var mm = this.parent.month();
+			return ( mm < 10 ? '0' + mm : mm );
 		},
 
 		// A short textual representation of a month, three letters
-		// MMM
 		MMM: function() {
 			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
 				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ this.parent.month() - 1 ];
 		},
 
 		// A full textual representation of a month, such as January or March
-		// F: function() {
 		MMMM: function() {
 			return [ 'January', 'February', 'March', 'April', 'May', 'June',
 				'July', 'August', 'September', 'October', 'November',
@@ -366,16 +325,14 @@ Epoch.prototype = {
 		},
 
 		// RFC 1123 formatted date
-		// RFC1123
-		// r: function() {
 		r: function() {
 			return this.parent._d.toUTCString();
 		},
 
 		// Seconds, with leading zeros
-		// ss
 		ss: function() {
-			return this.parent.zero( this.parent.sec() );
+			var ss = this.parent.sec();
+			return ( ss < 10 ? '0' + ss : ss );
 		},
 
 		// Milliseconds
@@ -384,13 +341,11 @@ Epoch.prototype = {
 		},
 
 		// Unix timestamp
-		// This one stays the same!
 		U: function() {
 			Math.round( this.parent._d.time() / 1000 );
 		},
 
 		// ISO-8601 week number of year, weeks starting on Monday
-		// ISO: ww
 		ww: function() {
 			var d = new Date( this.parent.year(), 0, 1 );
 			d = Math.ceil( ( this.parent._d - d ) / 86400000 );
@@ -400,20 +355,21 @@ Epoch.prototype = {
 		},
 
 		// A full numeric representation of a year, 4 digits
-		// ISO: YYYY
 		YYYY: function() {
 			return this.parent.year();
 		},
 
 		// A two digit representation of a year
-		// y: function() {
 		YY: function() {
 			return parseInt( this.parent.year().toString().substr(-2) );
-		},
-
+		}
 	},
 
+
+	// formatting token collection to use with strftime
+
 	_strftime: {
+
 		// The abbreviated weekday name according to the current locale.
 		a: function() {
 
@@ -449,12 +405,13 @@ Epoch.prototype = {
 
 		},
 
-		// Equivalent to %m/%d/%y. (Yecch-for Americans only. Americans should note that in other countries %d/%m/%y is rather common. This means that in international context this format is ambiguous and should not be used.) (SU)
+		// Equivalent to %m/%d/%y. (American)
 		D: function() {
 
 		},
 
-		// Like %d, the day of the month as a decimal number, but a leading zero is replaced by a space. (SU)
+		// Like %d, the day of the month as a decimal number, but a leading zero
+		// is replaced by a space. (SU)
 		e: function() {
 
 		},
@@ -469,12 +426,17 @@ Epoch.prototype = {
 
 		},
 
-		// The ISO 8601 week-based year (see NOTES) with century as a decimal number. The 4-digit year corresponding to the ISO week number (see %V). This has the same format and value as %Y, except that if the ISO week number belongs to the previous or next year, that year is used instead. (TZ)
+		// The ISO 8601 week-based year (see NOTES) with century as a decimal
+		// number. The 4-digit year corresponding to the ISO week number
+		// (see %V). This has the same format and value as %Y, except that if
+		// the ISO week number belongs to the previous or next year, that year
+		// is used instead. (TZ)
 		G: function() {
 
 		},
 
-		// Like %G, but without century, that is, with a 2-digit year (00-99). (TZ)
+		// Like %G, but without century, that is, with a 2-digit year (00-99).
+		// (TZ)
 		g: function() {
 
 		},
@@ -499,12 +461,14 @@ Epoch.prototype = {
 
 		},
 
-		// The hour (24-hour clock) as a decimal number (range 0 to 23); single digits are preceded by a blank. (See also %H.) (TZ)
+		// The hour (24-hour clock) as a decimal number (range 0 to 23); single
+		// digits are preceded by a blank. (See also %H.) (TZ)
 		k: function() {
 
 		},
 
-		// The hour (12-hour clock) as a decimal number (range 1 to 12); single digits are preceded by a blank. (See also %I.) (TZ)
+		// The hour (12-hour clock) as a decimal number (range 1 to 12); single
+		// digits are preceded by a blank. (See also %I.) (TZ)
 		l: function() {
 
 		},
@@ -529,32 +493,39 @@ Epoch.prototype = {
 
 		},
 
-		// Either "AM" or "PM" according to the given time value, or the corresponding strings for the current locale. Noon is treated as "PM" and midnight as "AM".
+		// Either "AM" or "PM" according to the given time value, or the
+		// corresponding strings for the current locale. Noon is treated as "PM"
+		// and midnight as "AM".
 		p: function() {
 
 		},
 
-		// Like %p but in lowercase: "am" or "pm" or a corresponding string for the current locale. (GNU)
+		// Like %p but in lowercase: "am" or "pm" or a corresponding string for
+		// the current locale. (GNU)
 		P: function() {
 
 		},
 
-		// The time in a.m. or p.m. notation. In the POSIX locale this is equivalent to %I:%M:%S %p. (SU)
+		// The time in a.m. or p.m. notation. In the POSIX locale this is
+		// equivalent to %I:%M:%S %p. (SU)
 		r: function() {
 
 		},
 
-		// The time in 24-hour notation (%H:%M). (SU) For a version including the seconds, see %T below.
+		// The time in 24-hour notation (%H:%M). (SU) For a version including
+		// the seconds, see %T below.
 		R: function() {
 
 		},
 
-		// The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). (TZ)
+		// The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000
+		// (UTC). (TZ)
 		s: function() {
 
 		},
 
-		// The second as a decimal number (range 00 to 60). (The range is up to 60 to allow for occasional leap seconds.)
+		// The second as a decimal number (range 00 to 60). (The range is up to
+		// 60 to allow for occasional leap seconds.)
 		S: function() {
 
 		},
@@ -569,37 +540,46 @@ Epoch.prototype = {
 
 		},
 
-		// The day of the week as a decimal, range 1 to 7, Monday being 1. See also %w. (SU)
+		// The day of the week as a decimal, range 1 to 7, Monday being 1. See
+		// also %w. (SU)
 		u: function() {
 
 		},
 
-		// The week number of the current year as a decimal number, range 00 to 53, starting with the first Sunday as the first day of week 01. See also %V and %W.
+		// The week number of the current year as a decimal number, range 00 to
+		// 53, starting with the first Sunday as the first day of week 01. See
+		// also %V and %W.
 		U: function() {
 
 		},
 
-		// The ISO 8601 week number (see NOTES) of the current year as a decimal number, range 01 to 53, where week 1 is the first week that has at least 4 days in the new year. See also %U and %W. (SU)
+		// The ISO 8601 week number (see NOTES) of the current year as a decimal
+		// number, range 01 to 53, where week 1 is the first week that has at
+		// least 4 days in the new year. See also %U and %W. (SU)
 		V: function() {
 
 		},
 
-		// The day of the week as a decimal, range 0 to 6, Sunday being 0. See also %u.
+		// The day of the week as a decimal, range 0 to 6, Sunday being 0. See
+		// also %u.
 		w: function() {
 
 		},
 
-		// The week number of the current year as a decimal number, range 00 to 53, starting with the first Monday as the first day of week 01.
+		// The week number of the current year as a decimal number, range 00 to
+		// 53, starting with the first Monday as the first day of week 01.
 		W: function() {
 
 		},
 
-		// The preferred date representation for the current locale without the time.
+		// The preferred date representation for the current locale without the
+		// time.
 		x: function() {
 
 		},
 
-		// The preferred time representation for the current locale without the date.
+		// The preferred time representation for the current locale without the
+		// date.
 		X: function() {
 
 		},
@@ -614,7 +594,8 @@ Epoch.prototype = {
 
 		},
 
-		// The +hhmm or -hhmm numeric timezone (that is, the hour and minute offset from UTC). (SU)
+		// The +hhmm or -hhmm numeric timezone (that is, the hour and minute
+		// offset from UTC). (SU)
 		z: function() {
 
 		},
@@ -642,25 +623,53 @@ Epoch.prototype = {
 	_year: null,
 	_time: null,
 
-	date: function() {
+	date: function(set) {
+		if( set ) {
+			this._date = null;
+			this._d.setDate( ( /(\+|-)\d/g.exec(set)
+				? this._d.getDate() + parseInt( set )
+				: set ) );
+		}
+
 		if( ! this._date )
 			this._date = this._d.getDate();
 		return this._date;
 	},
 
-	hour: function() {
+	hour: function(set) {
+		if( set ) {
+			this._hour = null;
+			this._d.setHours( ( /(\+|-)\d/g.exec(set)
+				? this._d.getHours() + parseInt( set )
+				: set ) );
+		}
+
 		if( ! this._hour )
 			this._hour = this._d.getHours();
 		return this._hour;
 	},
 
-	min: function() {
+	min: function(set) {
+		if( set ) {
+			this._min = null;
+			this._d.setMinutes( ( /(\+|-)\d/g.exec(set)
+				? this._d.getMinutes() + parseInt( set )
+				: set ) );
+		}
+
 		if( ! this._min )
 			this._min = this._d.getMinutes();
 		return this._min;
 	},
 
-	sec: function() {
+	sec: function(set) {
+		if( set ) {
+			this._sec = null;
+			this._d.setSeconds( ( /(\+|-)\d/g.exec(set)
+				? this._d.getSeconds() + parseInt( set )
+				: set ) );
+		}
+
 		if( ! this._sec )
 			this._sec = this._d.getSeconds();
 		return this._sec;
@@ -672,14 +681,30 @@ Epoch.prototype = {
 		return this._milli;
 	},
 
-	month: function() {
+	month: function(set) {
+		if( set ) {
+			this._month = null;
+			this._d.setMonth( ( /(\+|-)\d/g.exec(set)
+				? this._d.getMonth() + parseInt( set )
+				: set - 1 ) );
+		}
+
 		if( ! this._month )
 			// js returns jan = 0, dec = 11... don't know why
+			// don't change this, I've tried it both ways, this is the one true
 			this._month = this._d.getMonth() + 1;
+
 		return this._month;
 	},
 
-	year: function() {
+	year: function(set) {
+		if( set ) {
+			this._year = null;
+			this._d.setFullYear( ( /(\+|-)\d/g.exec(set)
+				? this._d.getFullYear() + parseInt( set )
+				: set ) );
+		}
+
 		if( ! this._year )
 			this._year = this._d.getFullYear();
 		return this._year;
@@ -698,7 +723,7 @@ Epoch.prototype = {
 	}
 };
 
-
+// chaining = omg
 var epoch = function(format) {
 	return new Epoch(format);
 }
