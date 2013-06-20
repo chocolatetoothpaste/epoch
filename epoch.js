@@ -3,28 +3,42 @@
  */
 
 // constructor, I love you!
-var Epoch = function(format){
-	this.version = '0.1';
-	this._d = ( format ? new Date(format) : new Date() );
+var Epoch = function( format ) {
+	this._d = ( format ? new Date( format ) : new Date() );
 	this._format.parent = this;
 }
 
+// chaining = omg
+var epoch = function(format) {
+	return new Epoch(format);
+}
+
 // prototype = sexy
-Epoch.prototype = {
+epoch.fn = Epoch.prototype = {
+	version: '0.2',
+	lang: 'en',
+	_lang: {
+		month: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July',
+			'August', 'September', 'October', 'November', 'December' ],
+
+		mon: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
+			'Nov', 'Dec' ]
+	},
+
 	format: function( str ) {
 
 		var f = this._format;
 
-		return str.replace(/(\[.*)?(\w)\2*(o)?(?!\])/g, function( $0, $1, $2, $3 ) {
+		return str.replace(/(\{.*)?(\w)\2*(o)?(?!\})/g, function( $0, $1, $2, $3 ) {
 			if( $3 === 'o' )
 				$0 = $0.replace('o', '');
 
-			if( ! $1 )
+			if( ! $1 ) {
 				return ( $3 === 'o' ? f._o(f[$0]()) : f[$0]() );
+			}
 			else
 				return $0;
-		}).replace(/\[|\]/g, '');
-
+		}).replace(/\{|\}/g, '');
 	},
 
 	strftime: function(str) {
@@ -54,51 +68,11 @@ Epoch.prototype = {
 		return this;
 	},
 
-	/*
-	 * This was a great function, but is ultimately far too interpretive to be
-	 * reliable or practical to the end user
-
-	modify: function( str ) {
-		this.clear();
-		// search for relative statements like:
-		// +/- x week(s), last/next month, x week(s) ago
-		var m = this._rel_exp.exec( str );
-		m.splice( 0, 1 );
-
-		// test if the relative time is numeric
-		var num = parseInt( m[0] );
-		var unit = m[1];
-
-		if( m[0] == 'next' || ! isNaN(num) || m[0] == 'last' ) {
-
-			var rel = ( num || m[2] === 'from now' ? parseInt( m[0] ) : 1 );
-
-			if( m[0] == 'last' )
-				rel = -1;
-
-			// if ago is found, make rel negative so it is subtracted
-			if( m[2] == 'ago' )
-				rel = -rel;
-
-			// calling the native "get" methods because calling .month(), etc
-			// was causing the _month, etc to get cached and not work properly
-			if( unit == 'day' )
-				this._d.setDate( this._d.getDate() + rel );
-			else if( unit == 'month' )
-				this._d.setMonth( this._d.getMonth() + rel );
-			else if( unit == 'week' )
-				// no use calculating 7*24*60*60*1000 every time;
-				// 604800000 = 1 week in milliseconds
-				this._d.setTime( this._d.getTime() + ( 604800000 * rel ) );
-			else if( unit == 'year' )
-				this._d.setFullYear( this._d.getFullYear() + rel );
-			else
-				throw "Unrecognized unit: " + unit;
-
-		}
-
-		return this;
-	},*/
+	zero: function( num, size ) {
+		var s = String(num);
+		while (s.length < size) s = "0" + s;
+		return s;
+	},
 
 
 	// yeah, my function is better... way better
@@ -159,152 +133,112 @@ Epoch.prototype = {
 	// collection of functions to calculate and return date formats
 	_format: {
 
-/*
-			d = date[_ + "Date"](),
-			D = date[_ + "Day"](),
-			m = date[_ + "Month"](),
-			y = date[_ + "FullYear"](),
-			H = date[_ + "Hours"](),
-			M = date[_ + "Minutes"](),
-			s = date[_ + "Seconds"](),
-			L = date[_ + "Milliseconds"](),
-			o = utc ? 0 : date.getTimezoneOffset(),
-			flags = {
-				d:    d,
-				dd:   pad(d),
-				ddd:  dF.i18n.dayNames[D],
-				dddd: dF.i18n.dayNames[D + 7],
-				m:    m + 1,
-				mm:   pad(m + 1),
-				mmm:  dF.i18n.monthNames[m],
-				mmmm: dF.i18n.monthNames[m + 12],
-				yy:   String(y).slice(2),
-				yyyy: y,
-				h:    H % 12 || 12,
-				hh:   pad(H % 12 || 12),
-				H:    H,
-				HH:   pad(H),
-				M:    M,
-				MM:   pad(M),
-				s:    s,
-				ss:   pad(s),
-				l:    pad(L, 3),
-				L:    pad(L > 99 ? Math.round(L / 10) : L),
-				t:    H < 12 ? "a"  : "p",
-				tt:   H < 12 ? "am" : "pm",
-				T:    H < 12 ? "A"  : "P",
-				TT:   H < 12 ? "AM" : "PM",
-				Z:    utc ? "UTC" : (String(date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
-				o:    (o > 0 ? "-" : "+") + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-				S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]*/
-
 		// Lowercase Ante meridiem and Post meridiem
 		a: function() {
-			return ( this.parent.hour() > 11
+			return ( this.parent.hour( null, true ) > 11
 				? 'pm' : 'am' );
 		},
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return ( this.parent.hour() > 11
+			return ( this.parent.hour( null, true ) > 11
 				? 'PM' : 'AM' );
 		},
 
 		// Numeric representation of the day of the week, 0 - 6 : Sun - Sat
 		d: function() {
-			return this.parent.day();
+			return this.parent.day( true );
 		},
 
 		// A textual representation of a day, three letters
 		ddd: function() {
 			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-				'Fri', 'Sat' ][ this.parent.day() ];
+				'Fri', 'Sat' ][ this.parent.day( true ) ];
 		},
 
 		// A full textual representation of the day of the week
 		dddd: function() {
 			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-				'Thursday', 'Friday', 'Saturday' ][ this.parent.day() ];
+				'Thursday', 'Friday', 'Saturday' ][ this.parent.day( true ) ];
 		},
 
 		// Day of the month without leading zeros
 		D: function() {
-			return this.parent.date();
+			return this.parent.date( null, true );
 		},
 
 		// Day of the month with leading zeros
 		DD: function() {
-			// console.log(typeof this.parent._d.getDate())
-			return this.parent._d.getDate();
-			// return this.parent.zero( this.parent.date() );
+			var d = this.parent.date( null, true );
+			return ( d < 10 ? '0' + d : d );
 		},
 
 		// The day of the year (starting from 0)
 		DDD: function() {
-			var f = new Date( this.parent.year(), 0, 1 );
-			return Math.ceil( ( this.parent._d - f ) / 86400000 );
+			var doy = new Date( this.parent.year( null, true ), 0, 0 );
+			return Math.ceil( ( this.parent._d - doy ) / 86400000 );
 		},
+
+		// The day of the year (starting from 0)
+		// DDDD: function() {
+		// 	var doy = new Date( this.parent.year( null, true ), 0, 0 );
+		// 	return Math.ceil( ( this.parent._d - doy ) / 86400000 );
+		// },
 
 		// 24-hour format of an hour without leading zeros
 		h: function() {
-			return this.parent.hour();
+			return this.parent.hour( null, true );
 		},
 
 		// 12-hour format of an hour without leading zeros
 		H: function() {
-			var h = this.parent.hour();
+			var h = this.parent.hour( null, true );
 			return ( h > 12 ? h -= 12 : h );
 		},
 
 		// 24-hour format of an hour with leading zeros
 		hh: function() {
-			var hh = this.parent.hour();
+			var hh = this.parent.hour( null, true );
 			return ( hh < 10 ? '0' + hh : hh );
 		},
 
 		// 12-hour format of an hour with leading zeros
 		HH: function() {
-			var h = this.parent.hour();
+			var h = this.parent.hour( null, true );
 			return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 		},
 
 		// Whether it's a leap year
 		L: function() {
-			var y = this.parent.year();
-			if( y % 4 == 0)
-				return ( y % 100 == 0 ? year % 400 == 0 : 1 );
-			else
-				return 0;
+			var y = this.parent.year( null, true );
+			return ( y % 4 == 0 ? ( y % 100 == 0 ? year % 400 == 0 : 1 ) : 0 );
 		},
 
 		// Minutes with leading zeros
 		mm: function() {
-			var mm = this.parent.min();
+			var mm = this.parent.min( null, true );
 			return ( mm < 10 ? '0' + mm : mm );
 		},
 
 		// Numeric representation of a month, without leading zeros
 		M: function() {
-			return this.parent.month();
+			return this.parent.month( null, true );
 		},
 
 		// Numeric representation of a month, with leading zeros
 		MM: function() {
-			var mm = this.parent.month();
+			var mm = this.parent.month( null, true );
 			return ( mm < 10 ? '0' + mm : mm );
 		},
 
 		// A short textual representation of a month, three letters
 		MMM: function() {
-			return [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-				'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ][ this.parent.month() - 1 ];
+			return this.parent._lang.mon[ this.parent.month( null, true ) - 1 ];
 		},
 
 		// A full textual representation of a month, such as January or March
 		MMMM: function() {
-			return [ 'January', 'February', 'March', 'April', 'May', 'June',
-				'July', 'August', 'September', 'October', 'November',
-				'December' ][ this.parent.month() - 1 ];
+			return this.parent._lang.month[ this.parent.month( null, true ) - 1 ];
 		},
 
 		// English ordinal suffix for the day of the month, 2 characters
@@ -331,13 +265,13 @@ Epoch.prototype = {
 
 		// Seconds, with leading zeros
 		ss: function() {
-			var ss = this.parent.sec();
+			var ss = this.parent.sec( null, true );
 			return ( ss < 10 ? '0' + ss : ss );
 		},
 
 		// Milliseconds
 		u: function() {
-			return this.parent.milli();
+			return this.parent.milli( null, true );
 		},
 
 		// Unix timestamp
@@ -347,21 +281,44 @@ Epoch.prototype = {
 
 		// ISO-8601 week number of year, weeks starting on Monday
 		ww: function() {
-			var d = new Date( this.parent.year(), 0, 1 );
+			var d = new Date( this.parent.year( null, true ), 0, 1 );
 			d = Math.ceil( ( this.parent._d - d ) / 86400000 );
-			d += this.parent.date();
-			d -= this.parent.day() + 10;
+			d += this.parent.date( null, true );
+			d -= this.parent.day( true ) + 10;
 			return Math.floor( d / 7 );
 		},
 
 		// A full numeric representation of a year, 4 digits
 		YYYY: function() {
-			return this.parent.year();
+			return this.parent.year( null, true );
 		},
 
 		// A two digit representation of a year
 		YY: function() {
-			return parseInt( this.parent.year().toString().substr(-2) );
+			return parseInt( this.parent.year( null, true ).toString().substr(-2) );
+		},
+
+		Z: function() {
+			var z = -( this.parent._d.getTimezoneOffset() / .6 );
+			var sign = ( z >= 0 ? '+' : '-' );
+			return sign + this.parent.zero( Math.abs(z), 4 );
+		},
+
+		ZZ: function() {
+			var z = -( this.parent._d.getTimezoneOffset() / .6 );
+			var sign = ( z >= 0 ? '+' : '-' );
+			z = this.parent.zero( Math.abs(z), 4 );
+			return sign + [ z.slice(0,2), z.slice(2,4) ].join(':');
+		},
+
+		// 3 letter time zone abbrev
+		ZZZ: function() {
+			return this.parent._d.toString().match(/\((\w*)\)/)[1];
+		},
+
+		// return full time zone name
+		ZZZZ: function() {
+
 		}
 	},
 
@@ -623,7 +580,9 @@ Epoch.prototype = {
 	_year: null,
 	_time: null,
 
-	date: function(set) {
+	date: function( set, echo ) {
+		echo = echo || false;
+
 		if( set ) {
 			this._date = null;
 			this._d.setDate( ( /(\+|-)\d/g.exec(set)
@@ -633,10 +592,13 @@ Epoch.prototype = {
 
 		if( ! this._date )
 			this._date = this._d.getDate();
-		return this._date;
+
+		return ( echo ? this._date : this );
 	},
 
-	hour: function(set) {
+	hour: function( set, echo ) {
+		echo = echo || false;
+
 		if( set ) {
 			this._hour = null;
 			this._d.setHours( ( /(\+|-)\d/g.exec(set)
@@ -646,10 +608,13 @@ Epoch.prototype = {
 
 		if( ! this._hour )
 			this._hour = this._d.getHours();
-		return this._hour;
+
+		return ( echo ? this._hour : this );
 	},
 
-	min: function(set) {
+	min: function( set, echo ) {
+		echo = echo || false;
+
 		if( set ) {
 			this._min = null;
 			this._d.setMinutes( ( /(\+|-)\d/g.exec(set)
@@ -659,10 +624,13 @@ Epoch.prototype = {
 
 		if( ! this._min )
 			this._min = this._d.getMinutes();
-		return this._min;
+
+		return ( echo ? this._min : this );
 	},
 
-	sec: function(set) {
+	sec: function( set, echo ) {
+		echo = echo || false;
+
 		if( set ) {
 			this._sec = null;
 			this._d.setSeconds( ( /(\+|-)\d/g.exec(set)
@@ -672,16 +640,25 @@ Epoch.prototype = {
 
 		if( ! this._sec )
 			this._sec = this._d.getSeconds();
-		return this._sec;
+
+		return ( echo ? this._sec : this );
 	},
 
-	milli: function() {
-		if( ! this._milli )
-			this._milli = this._d.getMilliseconds();
-		return this._milli;
+	milli: function( set, echo ) {
+		echo = echo || false;
+
+		if( set ) {
+			this._milli = null;
+			this._d.setMilliseconds( ( /(\+|-)\d/g.exec(set)
+				? this._d.getMilliseconds() + parseInt( set )
+				: set ) );
+		}
+
+		return ( echo ? this._milli : this );
 	},
 
-	month: function(set) {
+	month: function( set, echo ) {
+		echo = echo || false;
 		if( set ) {
 			this._month = null;
 			this._d.setMonth( ( /(\+|-)\d/g.exec(set)
@@ -694,10 +671,12 @@ Epoch.prototype = {
 			// don't change this, I've tried it both ways, this is the one true
 			this._month = this._d.getMonth() + 1;
 
-		return this._month;
+		return ( echo ? this._month : this );
 	},
 
-	year: function(set) {
+	year: function( set, echo ) {
+		echo = echo || false;
+
 		if( set ) {
 			this._year = null;
 			this._d.setFullYear( ( /(\+|-)\d/g.exec(set)
@@ -707,23 +686,34 @@ Epoch.prototype = {
 
 		if( ! this._year )
 			this._year = this._d.getFullYear();
-		return this._year;
+
+		return ( echo ? this._year : this );
 	},
 
-	day: function() {
+	day: function( echo ) {
+		echo = echo || false;
+
 		if( ! this._day )
 			this._day = this._d.getDay();
-		return this._day;
+
+		return ( echo ? this._day : this );
 	},
 
-	time: function() {
+	time: function( echo ) {
+		echo = echo || false;
+
 		if( ! this._time )
 			this._time = this._d.getTime();
-		return this._time;
+
+		return ( echo ? this._time : this );
 	}
 };
 
-// chaining = omg
-var epoch = function(format) {
-	return new Epoch(format);
-}
+var arr = document.getElementsByTagName('script');
+epoch.fn.path = arr[arr.length - 1].src.split('/').slice(0, -1).join('/');
+
+var f = document.createElement( 'script' );
+f.setAttribute( "type", "text/javascript" );
+f.setAttribute( "src", epoch.fn.path + '/lang/epoch.' + epoch.fn.lang + '.js' );
+
+document.getElementsByTagName("head")[0].appendChild( f );
