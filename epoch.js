@@ -1,22 +1,23 @@
 /*
- * Simple, logical, wonderful
+ * Eventually, epochjs.org but for now http://github.com/chocolatetoothpaste/epoch
  */
 
-// constructor, I love you!
 var Epoch = function( format ) {
 	this._d = ( format ? new Date( format ) : new Date() );
 	this._format.parent = this;
 }
 
-// chaining = omg
 var epoch = function( format ) {
-	return new Epoch( format );
+	return new Epoch( format ).lang();
 }
 
-// prototype = sexy
 epoch.fn = Epoch.prototype = {
-	version: '0.0.2',
-	lang: 'en',
+	version: '0.0.4',
+
+	// the lang loading function isn't working the way I want it to
+	// ( for obvious reasons [to some] ), so hard coded for now
+	// translators and contributors would be most welcome, esp for a solution
+	// to loading languages dynamically, would love to hear ideas
 	_lang: {
 		month: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July',
 			'August', 'September', 'October', 'November', 'December' ],
@@ -25,18 +26,17 @@ epoch.fn = Epoch.prototype = {
 			'Oct', 'Nov', 'Dec' ]
 	},
 
-	locale: function() {
-		var arr = document.getElementsByTagName('script');
-		this.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
-
-		var f = document.createElement( "script" );
-		f.setAttribute("type", "text/javascript");
-		f.setAttribute("src", this.path + "/lang/epoch." + this.lang + ".js");
+	lang: function( lang ) {
+		lang = lang || 'en';
+		var s = document.createElement( "script" );
+		s.setAttribute("type", "text/javascript");
+		s.setAttribute("src", this.path + "/lang/epoch." + lang + ".js");
 
 		// load language file, then gc on global scope
-		document.getElementsByTagName( "head" )[0].appendChild( f );
+		document.getElementsByTagName( "head" )[0].appendChild( s );
+		delete s;
 
-		delete arr, f;
+		return this;
 	},
 
 	format: function( str ) {
@@ -732,3 +732,6 @@ epoch.fn = Epoch.prototype = {
 		return ( echo ? this._time : this );
 	}
 };
+
+var arr = document.getElementsByTagName('script');
+epoch.fn.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
