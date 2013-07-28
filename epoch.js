@@ -9,61 +9,76 @@ var Epoch = function( format ) {
 }
 
 // chaining = omg
-var epoch = function(format) {
-	return new Epoch(format);
+var epoch = function( format ) {
+	return new Epoch( format );
 }
 
 // prototype = sexy
 epoch.fn = Epoch.prototype = {
-	version: '0.2',
+	version: '0.0.2',
 	lang: 'en',
 	_lang: {
 		month: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July',
 			'August', 'September', 'October', 'November', 'December' ],
 
-		mon: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
-			'Nov', 'Dec' ]
+		mon: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+			'Oct', 'Nov', 'Dec' ]
+	},
+
+	locale: function() {
+		var arr = document.getElementsByTagName('script');
+		this.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
+
+		var f = document.createElement( "script" );
+		f.setAttribute("type", "text/javascript");
+		f.setAttribute("src", this.path + "/lang/epoch." + this.lang + ".js");
+
+		// load language file, then gc on global scope
+		document.getElementsByTagName( "head" )[0].appendChild( f );
+
+		delete arr, f;
 	},
 
 	format: function( str ) {
+		var f = this._format, re = /(\[.*)?(\w)\2*(o)?(?!\])/g;
 
-		var f = this._format;
-
-		return str.replace(/(\{.*)?(\w)\2*(o)?(?!\})/g, function( $0, $1, $2, $3 ) {
-			if( $3 === 'o' )
-				$0 = $0.replace('o', '');
+		return str.replace( re, function( $0, $1, $2, $3 ) {
+			if( $3 === "o" )
+				$0 = $0.replace( "o", "" );
 
 			if( ! $1 ) {
-				return ( $3 === 'o' ? f._o(f[$0]()) : f[$0]() );
+				return ( $3 === "o" ? f._o( f[$0]() ) : f[$0]() );
 			}
 			else
 				return $0;
-		}).replace(/\{|\}/g, '');
+		} ).replace(/\[|\]/g, "");
 	},
 
-	strftime: function(str) {
-		var s = this._strftime;
+	// strftime: function(str) {
+	// 	var s = this._strftime;
 
-		var ff = str.replace(/%(\w)/g, function($0, $1) {
-			return 'asdf';
-		});
+	// 	var ff = str.replace(/%(\w)/g, function($0, $1) {
+	// 		return 'asdf';
+	// 	});
 
-		console.log(ff);
+	// 	console.log(ff);
 
-		// var pattern = new RegExp(/%(\w)/g), match, tok = [];
+	// 	// var pattern = new RegExp(/%(\w)/g), match, tok = [];
 
-		// while (match = pattern.exec(str)) {
-		// 	if( tok.indexOf(match[1]) === -1 )
-		// 		tok.push(match[1]);
-		// }
+	// 	// while (match = pattern.exec(str)) {
+	// 	// 	if( tok.indexOf(match[1]) === -1 )
+	// 	// 		tok.push(match[1]);
+	// 	// }
 
 
-	},
+	// },
 
 	clear: function() {
 		// this._d = ( format ? new Date(format) : new Date() );
-		this._date = this._day = this._week = this._month = this._year = null;
-		this._hour = this._min = this._sec = this._milli = this._time = null;
+		this._date = null, this._day = null, this._week = null,
+		this._month = null, this._year = null, this._hour = null,
+		this._min = null, this._sec = null, this._milli = null,
+		this._time = null;
 
 		return this;
 	},
@@ -75,7 +90,7 @@ epoch.fn = Epoch.prototype = {
 	},
 
 
-	// yeah, my function is better... way better
+	// better
 
 	from: function( date, rel ) {
 		rel = rel || { pre: 'in ', suf: ' ago' };
@@ -141,8 +156,7 @@ epoch.fn = Epoch.prototype = {
 
 		// Uppercase Ante meridiem and Post meridiem
 		A: function() {
-			return ( this.parent.hour( null, true ) > 11
-				? 'PM' : 'AM' );
+			return ( this.parent.hour( null, true ) > 11 ? 'PM' : 'AM' );
 		},
 
 		// Numeric representation of the day of the week, 0 - 6 : Sun - Sat
@@ -152,14 +166,14 @@ epoch.fn = Epoch.prototype = {
 
 		// A textual representation of a day, three letters
 		ddd: function() {
-			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-				'Fri', 'Sat' ][ this.parent.day( true ) ];
+			return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+				][ this.parent.day( true ) ];
 		},
 
 		// A full textual representation of the day of the week
 		dddd: function() {
-			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-				'Thursday', 'Friday', 'Saturday' ][ this.parent.day( true ) ];
+			return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+				'Friday', 'Saturday' ][ this.parent.day( true ) ];
 		},
 
 		// Day of the month without leading zeros
@@ -233,6 +247,8 @@ epoch.fn = Epoch.prototype = {
 
 		// A short textual representation of a month, three letters
 		MMM: function() {
+			// textual representations should be abstracted into
+			// pluggable language files
 			return this.parent._lang.mon[ this.parent.month( null, true ) - 1 ];
 		},
 
@@ -325,243 +341,243 @@ epoch.fn = Epoch.prototype = {
 
 	// formatting token collection to use with strftime
 
-	_strftime: {
+	// _strftime: {
 
-		// The abbreviated weekday name according to the current locale.
-		a: function() {
+	// 	// The abbreviated weekday name according to the current locale.
+	// 	a: function() {
 
-		},
+	// 	},
 
-		// The full weekday name according to the current locale.
-		A: function() {
+	// 	// The full weekday name according to the current locale.
+	// 	A: function() {
 
-		},
+	// 	},
 
-		// The abbreviated month name according to the current locale.
-		b: function() {
+	// 	// The abbreviated month name according to the current locale.
+	// 	b: function() {
 
-		},
+	// 	},
 
-		// The full month name according to the current locale.
-		B: function() {
+	// 	// The full month name according to the current locale.
+	// 	B: function() {
 
-		},
+	// 	},
 
-		// The preferred date and time representation for the current locale.
-		c: function() {
+	// 	// The preferred date and time representation for the current locale.
+	// 	c: function() {
 
-		},
+	// 	},
 
-		// The century number (year/100) as a 2-digit integer. (SU)
-		C: function() {
+	// 	// The century number (year/100) as a 2-digit integer. (SU)
+	// 	C: function() {
 
-		},
+	// 	},
 
-		// The day of the month as a decimal number (range 01 to 31).
-		d: function() {
+	// 	// The day of the month as a decimal number (range 01 to 31).
+	// 	d: function() {
 
-		},
+	// 	},
 
-		// Equivalent to %m/%d/%y. (American)
-		D: function() {
+	// 	// Equivalent to %m/%d/%y. (American)
+	// 	D: function() {
 
-		},
+	// 	},
 
-		// Like %d, the day of the month as a decimal number, but a leading zero
-		// is replaced by a space. (SU)
-		e: function() {
+	// 	// Like %d, the day of the month as a decimal number, but a leading zero
+	// 	// is replaced by a space. (SU)
+	// 	e: function() {
 
-		},
+	// 	},
 
-		// Modifier: use alternative format, see below. (SU)
-		E: function() {
+	// 	// Modifier: use alternative format, see below. (SU)
+	// 	E: function() {
 
-		},
+	// 	},
 
-		// Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)
-		F: function() {
+	// 	// Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)
+	// 	F: function() {
 
-		},
+	// 	},
 
-		// The ISO 8601 week-based year (see NOTES) with century as a decimal
-		// number. The 4-digit year corresponding to the ISO week number
-		// (see %V). This has the same format and value as %Y, except that if
-		// the ISO week number belongs to the previous or next year, that year
-		// is used instead. (TZ)
-		G: function() {
+	// 	// The ISO 8601 week-based year (see NOTES) with century as a decimal
+	// 	// number. The 4-digit year corresponding to the ISO week number
+	// 	// (see %V). This has the same format and value as %Y, except that if
+	// 	// the ISO week number belongs to the previous or next year, that year
+	// 	// is used instead. (TZ)
+	// 	G: function() {
 
-		},
+	// 	},
 
-		// Like %G, but without century, that is, with a 2-digit year (00-99).
-		// (TZ)
-		g: function() {
+	// 	// Like %G, but without century, that is, with a 2-digit year (00-99).
+	// 	// (TZ)
+	// 	g: function() {
 
-		},
+	// 	},
 
-		// Equivalent to %b. (SU)
-		h: function() {
+	// 	// Equivalent to %b. (SU)
+	// 	h: function() {
 
-		},
+	// 	},
 
-		// The hour as a decimal number using a 24-hour clock (range 00 to 23).
-		H: function() {
+	// 	// The hour as a decimal number using a 24-hour clock (range 00 to 23).
+	// 	H: function() {
 
-		},
+	// 	},
 
-		// The hour as a decimal number using a 12-hour clock (range 01 to 12).
-		I: function() {
+	// 	// The hour as a decimal number using a 12-hour clock (range 01 to 12).
+	// 	I: function() {
 
-		},
+	// 	},
 
-		// The day of the year as a decimal number (range 001 to 366).
-		j: function() {
+	// 	// The day of the year as a decimal number (range 001 to 366).
+	// 	j: function() {
 
-		},
+	// 	},
 
-		// The hour (24-hour clock) as a decimal number (range 0 to 23); single
-		// digits are preceded by a blank. (See also %H.) (TZ)
-		k: function() {
+	// 	// The hour (24-hour clock) as a decimal number (range 0 to 23); single
+	// 	// digits are preceded by a blank. (See also %H.) (TZ)
+	// 	k: function() {
 
-		},
+	// 	},
 
-		// The hour (12-hour clock) as a decimal number (range 1 to 12); single
-		// digits are preceded by a blank. (See also %I.) (TZ)
-		l: function() {
+	// 	// The hour (12-hour clock) as a decimal number (range 1 to 12); single
+	// 	// digits are preceded by a blank. (See also %I.) (TZ)
+	// 	l: function() {
 
-		},
+	// 	},
 
-		// The month as a decimal number (range 01 to 12).
-		m: function() {
+	// 	// The month as a decimal number (range 01 to 12).
+	// 	m: function() {
 
-		},
+	// 	},
 
-		// The minute as a decimal number (range 00 to 59).
-		M: function() {
+	// 	// The minute as a decimal number (range 00 to 59).
+	// 	M: function() {
 
-		},
+	// 	},
 
-		// A newline character. (SU)
-		n: function() {
+	// 	// A newline character. (SU)
+	// 	n: function() {
 
-		},
+	// 	},
 
-		// Modifier: use alternative format, see below. (SU)
-		O: function() {
+	// 	// Modifier: use alternative format, see below. (SU)
+	// 	O: function() {
 
-		},
+	// 	},
 
-		// Either "AM" or "PM" according to the given time value, or the
-		// corresponding strings for the current locale. Noon is treated as "PM"
-		// and midnight as "AM".
-		p: function() {
+	// 	// Either "AM" or "PM" according to the given time value, or the
+	// 	// corresponding strings for the current locale. Noon is treated as "PM"
+	// 	// and midnight as "AM".
+	// 	p: function() {
 
-		},
+	// 	},
 
-		// Like %p but in lowercase: "am" or "pm" or a corresponding string for
-		// the current locale. (GNU)
-		P: function() {
+	// 	// Like %p but in lowercase: "am" or "pm" or a corresponding string for
+	// 	// the current locale. (GNU)
+	// 	P: function() {
 
-		},
+	// 	},
 
-		// The time in a.m. or p.m. notation. In the POSIX locale this is
-		// equivalent to %I:%M:%S %p. (SU)
-		r: function() {
+	// 	// The time in a.m. or p.m. notation. In the POSIX locale this is
+	// 	// equivalent to %I:%M:%S %p. (SU)
+	// 	r: function() {
 
-		},
+	// 	},
 
-		// The time in 24-hour notation (%H:%M). (SU) For a version including
-		// the seconds, see %T below.
-		R: function() {
+	// 	// The time in 24-hour notation (%H:%M). (SU) For a version including
+	// 	// the seconds, see %T below.
+	// 	R: function() {
 
-		},
+	// 	},
 
-		// The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000
-		// (UTC). (TZ)
-		s: function() {
+	// 	// The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000
+	// 	// (UTC). (TZ)
+	// 	s: function() {
 
-		},
+	// 	},
 
-		// The second as a decimal number (range 00 to 60). (The range is up to
-		// 60 to allow for occasional leap seconds.)
-		S: function() {
+	// 	// The second as a decimal number (range 00 to 60). (The range is up to
+	// 	// 60 to allow for occasional leap seconds.)
+	// 	S: function() {
 
-		},
+	// 	},
 
-		// A tab character. (SU)
-		t: function() {
+	// 	// A tab character. (SU)
+	// 	t: function() {
 
-		},
+	// 	},
 
-		// The time in 24-hour notation (%H:%M:%S). (SU)
-		T: function() {
+	// 	// The time in 24-hour notation (%H:%M:%S). (SU)
+	// 	T: function() {
 
-		},
+	// 	},
 
-		// The day of the week as a decimal, range 1 to 7, Monday being 1. See
-		// also %w. (SU)
-		u: function() {
+	// 	// The day of the week as a decimal, range 1 to 7, Monday being 1. See
+	// 	// also %w. (SU)
+	// 	u: function() {
 
-		},
+	// 	},
 
-		// The week number of the current year as a decimal number, range 00 to
-		// 53, starting with the first Sunday as the first day of week 01. See
-		// also %V and %W.
-		U: function() {
+	// 	// The week number of the current year as a decimal number, range 00 to
+	// 	// 53, starting with the first Sunday as the first day of week 01. See
+	// 	// also %V and %W.
+	// 	U: function() {
 
-		},
+	// 	},
 
-		// The ISO 8601 week number (see NOTES) of the current year as a decimal
-		// number, range 01 to 53, where week 1 is the first week that has at
-		// least 4 days in the new year. See also %U and %W. (SU)
-		V: function() {
+	// 	// The ISO 8601 week number (see NOTES) of the current year as a decimal
+	// 	// number, range 01 to 53, where week 1 is the first week that has at
+	// 	// least 4 days in the new year. See also %U and %W. (SU)
+	// 	V: function() {
 
-		},
+	// 	},
 
-		// The day of the week as a decimal, range 0 to 6, Sunday being 0. See
-		// also %u.
-		w: function() {
+	// 	// The day of the week as a decimal, range 0 to 6, Sunday being 0. See
+	// 	// also %u.
+	// 	w: function() {
 
-		},
+	// 	},
 
-		// The week number of the current year as a decimal number, range 00 to
-		// 53, starting with the first Monday as the first day of week 01.
-		W: function() {
+	// 	// The week number of the current year as a decimal number, range 00 to
+	// 	// 53, starting with the first Monday as the first day of week 01.
+	// 	W: function() {
 
-		},
+	// 	},
 
-		// The preferred date representation for the current locale without the
-		// time.
-		x: function() {
+	// 	// The preferred date representation for the current locale without the
+	// 	// time.
+	// 	x: function() {
 
-		},
+	// 	},
 
-		// The preferred time representation for the current locale without the
-		// date.
-		X: function() {
+	// 	// The preferred time representation for the current locale without the
+	// 	// date.
+	// 	X: function() {
 
-		},
+	// 	},
 
-		// The year as a decimal number without a century (range 00 to 99).
-		y: function() {
+	// 	// The year as a decimal number without a century (range 00 to 99).
+	// 	y: function() {
 
-		},
+	// 	},
 
-		// The year as a decimal number including the century.
-		Y: function() {
+	// 	// The year as a decimal number including the century.
+	// 	Y: function() {
 
-		},
+	// 	},
 
-		// The +hhmm or -hhmm numeric timezone (that is, the hour and minute
-		// offset from UTC). (SU)
-		z: function() {
+	// 	// The +hhmm or -hhmm numeric timezone (that is, the hour and minute
+	// 	// offset from UTC). (SU)
+	// 	z: function() {
 
-		},
+	// 	},
 
-		// The timezone or name or abbreviation.
-		Z: function() {
+	// 	// The timezone or name or abbreviation.
+	// 	Z: function() {
 
-		}
-	},
+	// 	}
+	// },
 
 	/**
 	 * CACHE SECTION ***********************************************************
@@ -579,6 +595,12 @@ epoch.fn = Epoch.prototype = {
 	_milli: null,
 	_year: null,
 	_time: null,
+
+	// modify: function( set, dSet, dGet ) {
+	// 	dSet( ( /(\+|-)\d/g.exec( set )
+	// 					? dGet() + parseInt( set )
+	// 					: set - 1 ) );
+	// },
 
 	date: function( set, echo ) {
 		echo = echo || false;
@@ -661,6 +683,8 @@ epoch.fn = Epoch.prototype = {
 		echo = echo || false;
 		if( set ) {
 			this._month = null;
+			// console.log(setMonth);
+			// this.modify(set, this._d.setMonth, this._d.getMonth);
 			this._d.setMonth( ( /(\+|-)\d/g.exec(set)
 				? this._d.getMonth() + parseInt( set )
 				: set - 1 ) );
@@ -699,7 +723,7 @@ epoch.fn = Epoch.prototype = {
 		return ( echo ? this._day : this );
 	},
 
-	time: function( echo ) {
+	time: function(echo) {
 		echo = echo || false;
 
 		if( ! this._time )
@@ -708,12 +732,3 @@ epoch.fn = Epoch.prototype = {
 		return ( echo ? this._time : this );
 	}
 };
-
-var arr = document.getElementsByTagName('script');
-epoch.fn.path = arr[arr.length - 1].src.split('/').slice(0, -1).join('/');
-
-var f = document.createElement( 'script' );
-f.setAttribute( "type", "text/javascript" );
-f.setAttribute( "src", epoch.fn.path + '/lang/epoch.' + epoch.fn.lang + '.js' );
-
-document.getElementsByTagName("head")[0].appendChild( f );
