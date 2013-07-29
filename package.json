@@ -1,0 +1,13 @@
+{
+	"name": "epoch-js",
+	"version": "0.0.6",
+	"description": "Simple, elegant Date/Time formatting library",
+	"author": {
+		"name": "Ross Paskett",
+		"email": "rpaskett@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/chocolatetoothpaste/epoch"
+	}
+}
