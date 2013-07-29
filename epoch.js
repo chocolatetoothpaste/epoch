@@ -14,7 +14,7 @@
 	}
 
 	epoch.fn = Epoch.prototype = {
-		version: '0.0.6',
+		version: '0.0.7',
 
 		// the lang loading function isn't working the way I want it to
 		// ( for obvious reasons [to some] ), so hard coded for now
@@ -28,18 +28,22 @@
 				'Oct', 'Nov', 'Dec' ]
 		},
 
-		lang: function( lang ) {
-			lang = lang || 'en';
-			var s = document.createElement( "script" );
-			s.setAttribute("type", "text/javascript");
-			s.setAttribute("src", this.path + "/lang/epoch." + lang + ".js");
+		// lang: function( lang ) {
+		// 	lang = lang || 'en';
+		// 	var s = document.createElement( "script" );
+		// 	s.setAttribute("type", "text/javascript");
+		// 	s.setAttribute("src", this.path + "/lang/epoch." + lang + ".js");
 
-			// load language file, then gc on global scope
-			document.getElementsByTagName( "head" )[0].appendChild( s );
-			delete s;
+		// 	// load language file, then gc on global scope
+		// 	document.getElementsByTagName( "head" )[0].appendChild( s );
+		// 	delete s;
 
-			return this;
-		},
+		// 	return this;
+		// },
+
+		// strftime: function( str ) {
+			// load epoch.strftime.js to replace this function on the fly
+		// },
 
 		format: function( str ) {
 			var f = this._format, re = /(\[.*)?(\w)\2*(o)?(?!\])/g;
@@ -66,11 +70,12 @@
 			return this;
 		},
 
-		zero: function( num, size ) {
-			var s = String(num);
-			while (s.length < size) s = "0" + s;
-			return s;
-		},
+		// wish there was a native method for this
+		// zero: function( num, size ) {
+		// 	var s = String(num);
+		// 	while (s.length < size) s = "0" + s;
+		// 	return s;
+		// },
 
 
 		// better
@@ -479,8 +484,7 @@
 
 	if( typeof module !== 'undefined' && module.exports ) {
 		module.exports = epoch;
-		// should probably set the path for server env once lang module loading works
-		// epoch.fn.path =
+		epoch.fn.path = __dirname;
 	}
 
 	else {
