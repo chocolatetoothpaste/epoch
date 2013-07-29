@@ -8,11 +8,11 @@ var Epoch = function( format ) {
 }
 
 var epoch = function( format ) {
-	return new Epoch( format ).lang();
+	return new Epoch( format )//.lang();
 }
 
 epoch.fn = Epoch.prototype = {
-	version: '0.0.4',
+	version: '0.0.5',
 
 	// the lang loading function isn't working the way I want it to
 	// ( for obvious reasons [to some] ), so hard coded for now
@@ -733,5 +733,10 @@ epoch.fn = Epoch.prototype = {
 	}
 };
 
-var arr = document.getElementsByTagName('script');
-epoch.fn.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
+if( typeof module !== 'undefined' && module.exports )
+	module.exports = epoch;
+
+else {
+	var arr = document.getElementsByTagName('script');
+	epoch.fn.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
+}
