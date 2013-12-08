@@ -14,7 +14,7 @@
 	}
 
 	epoch.fn = Epoch.prototype = {
-		version: '0.0.7',
+		version: '0.0.8',
 
 		// the lang loading function isn't working the way I want it to
 		// ( for obvious reasons [to some] ), so hard coded for now
@@ -62,12 +62,8 @@
 
 		clear: function() {
 			// this._d = ( format ? new Date(format) : new Date() );
-			this._date = null, this._day = null, this._week = null,
-			this._month = null, this._year = null, this._hour = null,
-			this._min = null, this._sec = null, this._milli = null,
-			this._time = null;
-
-			return this;
+			this._date = this._day = this._week = this._month = this._year =
+			this._hour = this._min = this._sec = this._milli = this._time = null;
 		},
 
 		// wish there was a native method for this
@@ -138,98 +134,98 @@
 
 			// Lowercase Ante meridiem and Post meridiem
 			a: function() {
-				return ( this.parent.hour( null, true ) > 11
+				return ( this.parent.hour() > 11
 					? 'pm' : 'am' );
 			},
 
 			// Uppercase Ante meridiem and Post meridiem
 			A: function() {
-				return ( this.parent.hour( null, true ) > 11 ? 'PM' : 'AM' );
+				return ( this.parent.hour() > 11 ? 'PM' : 'AM' );
 			},
 
 			// Numeric representation of the day of the week, 0 - 6 : Sun - Sat
 			d: function() {
-				return this.parent.day( true );
+				return this.parent.day();
 			},
 
 			// A textual representation of a day, three letters
 			ddd: function() {
 				return [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
-					][ this.parent.day( true ) ];
+					][ this.parent.day() ];
 			},
 
 			// A full textual representation of the day of the week
 			dddd: function() {
 				return [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-					'Friday', 'Saturday' ][ this.parent.day( true ) ];
+					'Friday', 'Saturday' ][ this.parent.day() ];
 			},
 
 			// Day of the month without leading zeros
 			D: function() {
-				return this.parent.date( null, true );
+				return this.parent.date();
 			},
 
 			// Day of the month with leading zeros
 			DD: function() {
-				var d = this.parent.date( null, true );
+				var d = this.parent.date();
 				return ( d < 10 ? '0' + d : d );
 			},
 
 			// The day of the year (starting from 0)
 			DDD: function() {
-				var doy = new Date( this.parent.year( null, true ), 0, 0 );
+				var doy = new Date( this.parent.year(), 0, 0 );
 				return Math.ceil( ( this.parent._d - doy ) / 86400000 );
 			},
 
 			// The day of the year (starting from 0)
 			// DDDD: function() {
-			// 	var doy = new Date( this.parent.year( null, true ), 0, 0 );
+			// 	var doy = new Date( this.parent.year(), 0, 0 );
 			// 	return Math.ceil( ( this.parent._d - doy ) / 86400000 );
 			// },
 
 			// 24-hour format of an hour without leading zeros
 			h: function() {
-				return this.parent.hour( null, true );
+				return this.parent.hour();
 			},
 
 			// 12-hour format of an hour without leading zeros
 			H: function() {
-				var h = this.parent.hour( null, true );
+				var h = this.parent.hour();
 				return ( h > 12 ? h -= 12 : h );
 			},
 
 			// 24-hour format of an hour with leading zeros
 			hh: function() {
-				var hh = this.parent.hour( null, true );
+				var hh = this.parent.hour();
 				return ( hh < 10 ? '0' + hh : hh );
 			},
 
 			// 12-hour format of an hour with leading zeros
 			HH: function() {
-				var h = this.parent.hour( null, true );
+				var h = this.parent.hour();
 				return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 			},
 
 			// Whether it's a leap year
 			L: function() {
-				var y = this.parent.year( null, true );
+				var y = this.parent.year();
 				return ( y % 4 == 0 ? ( y % 100 == 0 ? year % 400 == 0 : 1 ) : 0 );
 			},
 
 			// Minutes with leading zeros
 			mm: function() {
-				var mm = this.parent.min( null, true );
+				var mm = this.parent.min();
 				return ( mm < 10 ? '0' + mm : mm );
 			},
 
 			// Numeric representation of a month, without leading zeros
 			M: function() {
-				return this.parent.month( null, true );
+				return this.parent.month();
 			},
 
 			// Numeric representation of a month, with leading zeros
 			MM: function() {
-				var mm = this.parent.month( null, true );
+				var mm = this.parent.month();
 				return ( mm < 10 ? '0' + mm : mm );
 			},
 
@@ -237,12 +233,12 @@
 			MMM: function() {
 				// textual representations should be abstracted into
 				// pluggable language files
-				return this.parent._lang.mon[ this.parent.month( null, true ) - 1 ];
+				return this.parent._lang.mon[ this.parent.month() - 1 ];
 			},
 
 			// A full textual representation of a month, such as January or March
 			MMMM: function() {
-				return this.parent._lang.month[ this.parent.month( null, true ) - 1 ];
+				return this.parent._lang.month[ this.parent.month() - 1 ];
 			},
 
 			// English ordinal suffix for the day of the month, 2 characters
@@ -269,13 +265,13 @@
 
 			// Seconds, with leading zeros
 			ss: function() {
-				var ss = this.parent.sec( null, true );
+				var ss = this.parent.sec();
 				return ( ss < 10 ? '0' + ss : ss );
 			},
 
 			// Milliseconds
 			u: function() {
-				return this.parent.milli( null, true );
+				return this.parent.milli();
 			},
 
 			// Unix timestamp
@@ -285,21 +281,21 @@
 
 			// ISO-8601 week number of year, weeks starting on Monday
 			ww: function() {
-				var d = new Date( this.parent.year( null, true ), 0, 1 );
+				var d = new Date( this.parent.year(), 0, 1 );
 				d = Math.ceil( ( this.parent._d - d ) / 86400000 );
-				d += this.parent.date( null, true );
+				d += this.parent.date();
 				d -= this.parent.day( true ) + 10;
 				return Math.floor( d / 7 );
 			},
 
 			// A full numeric representation of a year, 4 digits
 			YYYY: function() {
-				return this.parent.year( null, true );
+				return this.parent.year();
 			},
 
 			// A two digit representation of a year
 			YY: function() {
-				return parseInt( this.parent.year( null, true ).toString().substr(-2) );
+				return parseInt( this.parent.year().toString().substr(-2) );
 			},
 
 			Z: function() {
@@ -349,9 +345,7 @@
 		// 					: set - 1 ) );
 		// },
 
-		date: function( set, echo ) {
-			echo = echo || false;
-
+		date: function( set ) {
 			if( set ) {
 				this._date = null;
 				this._d.setDate( ( /(\+|-)\d/g.exec(set)
@@ -362,12 +356,10 @@
 			if( ! this._date )
 				this._date = this._d.getDate();
 
-			return ( echo ? this._date : this );
+			return this._date;
 		},
 
-		hour: function( set, echo ) {
-			echo = echo || false;
-
+		hour: function( set ) {
 			if( set ) {
 				this._hour = null;
 				this._d.setHours( ( /(\+|-)\d/g.exec(set)
@@ -378,12 +370,10 @@
 			if( ! this._hour )
 				this._hour = this._d.getHours();
 
-			return ( echo ? this._hour : this );
+			return this._hour;
 		},
 
-		min: function( set, echo ) {
-			echo = echo || false;
-
+		min: function( set ) {
 			if( set ) {
 				this._min = null;
 				this._d.setMinutes( ( /(\+|-)\d/g.exec(set)
@@ -394,12 +384,10 @@
 			if( ! this._min )
 				this._min = this._d.getMinutes();
 
-			return ( echo ? this._min : this );
+			return this._min;
 		},
 
-		sec: function( set, echo ) {
-			echo = echo || false;
-
+		sec: function( set ) {
 			if( set ) {
 				this._sec = null;
 				this._d.setSeconds( ( /(\+|-)\d/g.exec(set)
@@ -410,12 +398,10 @@
 			if( ! this._sec )
 				this._sec = this._d.getSeconds();
 
-			return ( echo ? this._sec : this );
+			return this._sec;
 		},
 
-		milli: function( set, echo ) {
-			echo = echo || false;
-
+		milli: function( set ) {
 			if( set ) {
 				this._milli = null;
 				this._d.setMilliseconds( ( /(\+|-)\d/g.exec(set)
@@ -423,11 +409,10 @@
 					: set ) );
 			}
 
-			return ( echo ? this._milli : this );
+			return this._milli;
 		},
 
-		month: function( set, echo ) {
-			echo = echo || false;
+		month: function( set ) {
 			if( set ) {
 				this._month = null;
 				// console.log(setMonth);
@@ -442,12 +427,10 @@
 				// don't change this, I've tried it both ways, this is the one true
 				this._month = this._d.getMonth() + 1;
 
-			return ( echo ? this._month : this );
+			return this._month;
 		},
 
-		year: function( set, echo ) {
-			echo = echo || false;
-
+		year: function( set ) {
 			if( set ) {
 				this._year = null;
 				this._d.setFullYear( ( /(\+|-)\d/g.exec(set)
@@ -458,25 +441,21 @@
 			if( ! this._year )
 				this._year = this._d.getFullYear();
 
-			return ( echo ? this._year : this );
+			return this._year;
 		},
 
-		day: function( echo ) {
-			echo = echo || false;
-
+		day: function() {
 			if( ! this._day )
 				this._day = this._d.getDay();
 
-			return ( echo ? this._day : this );
+			return this._day;
 		},
 
 		time: function(echo) {
-			echo = echo || false;
-
 			if( ! this._time )
 				this._time = this._d.getTime();
 
-			return ( echo ? this._time : this );
+			return this._time;
 		}
 	};
 
@@ -488,8 +467,8 @@
 	}
 
 	else {
-		var arr = document.getElementsByTagName('script');
-		epoch.fn.path = arr[arr.length - 1].src.split( "/" ).slice( 0, -1 ).join( "/" );
+		epoch.fn.path = [].pop.call( document.getElementsByTagName( 'script' ) )
+			.src.split( "/" ).slice( 0, -1 ).join( "/" );
 		root.epoch = epoch;
 	}
 })();
