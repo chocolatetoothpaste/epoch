@@ -1,5 +1,5 @@
-epoch.js - Wonderful Date Formatting and Calculations in JavaScript
-===================================================================
+epoch.js - Wonderful Date Formatting and Calculations
+=====================================================
 
 **Easy to use**
 

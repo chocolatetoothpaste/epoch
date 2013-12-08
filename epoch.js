@@ -14,7 +14,7 @@
 	}
 
 	epoch.fn = Epoch.prototype = {
-		version: '0.0.8',
+		version: '0.0.9',
 
 		// the lang loading function isn't working the way I want it to
 		// ( for obvious reasons [to some] ), so hard coded for now
@@ -46,9 +46,9 @@
 		// },
 
 		format: function( str ) {
-			var f = this._format, re = /(\[.*)?(\w)\2*(o)?(?!\])/g;
+			var f = this._format, rx = /(\[.*)?(\w)\2*(o)?(?!\])/g;
 
-			return str.replace( re, function( $0, $1, $2, $3 ) {
+			return str.replace( rx, function( $0, $1, $2, $3 ) {
 				if( $3 === "o" )
 					$0 = $0.replace( "o", "" );
 
@@ -62,8 +62,9 @@
 
 		clear: function() {
 			// this._d = ( format ? new Date(format) : new Date() );
-			this._date = this._day = this._week = this._month = this._year =
-			this._hour = this._min = this._sec = this._milli = this._time = null;
+			this._date = this._day = this._week = this._month = null;
+			this._year = this._hour = this._min = this._sec = null;
+			this._milli = this._time = null;
 		},
 
 		// wish there was a native method for this
@@ -75,6 +76,8 @@
 
 
 		// better
+		// needs some love, like a big, elastic band
+		// ranges should be a little "looser"
 
 		from: function( date, rel ) {
 			rel = rel || { pre: 'in ', suf: ' ago' };
@@ -209,7 +212,7 @@
 			// Whether it's a leap year
 			L: function() {
 				var y = this.parent.year();
-				return ( y % 4 == 0 ? ( y % 100 == 0 ? year % 400 == 0 : 1 ) : 0 );
+				return ( y % 4 == 0 ? ( y % 100 == 0 ? y % 400 == 0 : 1 ) : 0 );
 			},
 
 			// Minutes with leading zeros
