@@ -1,5 +1,5 @@
-(function() {
-	epoch.fn.strftime = function(str) {
+( function( Epoch ) {
+	Epoch.prototype.strftime = function(str) {
 		var s = this._strftime;
 
 		var ff = str.replace(/%(\w)/g, function($0, $1) {
@@ -18,7 +18,7 @@
 
 	};
 
-	epoch.fn._strftime = {
+	Epoch.prototype._strftime = {
 
 		// The abbreviated weekday name according to the current locale.
 		a: function() {
@@ -255,4 +255,4 @@
 
 		}
 	};
-})();
+}).bind(this);
