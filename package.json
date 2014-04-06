@@ -1,7 +1,8 @@
 {
 	"name": "epoch.js",
-	"version": "0.0.10",
+	"version": "0.0.11",
 	"description": "Simple, elegant Date/Time formatting library",
+	"main": "./epoch.js",
 	"author": {
 		"name": "Ross Paskett",
 		"email": "rpaskett@gmail.com"
