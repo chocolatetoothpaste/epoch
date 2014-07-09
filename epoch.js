@@ -339,11 +339,14 @@ Epoch.prototype._milli = null;
 Epoch.prototype._year = null;
 Epoch.prototype._time = null;
 
-// Epoch.prototype.modify = function( val, set, get ) {
-// 	set.call( null, ( /(\+|-)\d/g.exec( val )
-// 					? get.call() + parseInt( val )
-// 					: val ) );
-// },
+Epoch.prototype.modify = function( val, set, get ) {
+	if( typeof val !== "undefined" ) {
+		val = ( /(\+|-)\d/g.exec( val )
+			? get.call() + parseInt( val )
+			: val );
+		set.call( null, val );
+	}
+};
 
 Epoch.prototype.date = function( set ) {
 	if( set ) {
