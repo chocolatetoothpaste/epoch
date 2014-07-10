@@ -36,12 +36,13 @@ Epoch.prototype.format = function( str ) {
 
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
 		if( typeof $1 === "undefined" ) {
-			return $0;
-		}
-		else {
+			// console.log($1)
 			// check for ordinal suffix in format
 			// ($3 would be undefined if $0 was escaped text)
 			return ( $3 === "o" ? f._o( f[$0.replace( "o", "" )]() ) : f[$0]() );
+		}
+		else {
+			return $0;
 		}
 	} ).replace( /[\[\]]/g, "" );
 
