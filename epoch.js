@@ -28,25 +28,23 @@ else {
 Epoch.prototype.format = function( str ) {
 	var f = this._format,
 		// regex breakdown:
+		// * looks for text surrounded by brackets "[]",
+		// * OR
 		// * looks for repeating occurences of a character (or just one),
-		// * same case
-		// * not surrounded by brackers "[]"
 		// * possibly followed by one "o" (ordinal suffix)
-		rx = /(\[.*)?(\w)\2*(o)?(?!\])/g;
+		rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
 
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
-		// check for ordinal suffix in format
-		if( $3 === "o" )
-			$0 = $0.replace( "o", "" );
-
-		// if text is not escaped (inside brackets),
-		// replace "o" with return value of _o
-		if( ! $1 ) {
-			return ( $3 === "o" ? f._o( f[$0]() ) : f[$0]() );
-		}
-		else
+		if( typeof $1 === "undefined" ) {
 			return $0;
-	} ).replace(/\[|\]/g, "");
+		}
+		else {
+			// check for ordinal suffix in format
+			// ($3 would be undefined if $0 was escaped text)
+			return ( $3 === "o" ? f._o( f[$0.replace( "o", "" )]() ) : f[$0]() );
+		}
+	} ).replace( /[\[\]]/g, "" );
+
 };
 
 
@@ -207,7 +205,7 @@ Epoch.prototype._format = {
 	// Whether it's a leap year
 	L: function() {
 		var y = this.parent.year();
-		return ( y % 4 == 0 ? ( y % 100 == 0 ? y % 400 == 0 : 1 ) : 0 );
+		return ( y % 4 === 0 ? ( y % 100 === 0 ? y % 400 === 0 : 1 ) : 0 );
 	},
 
 	// Minutes with leading zeros
@@ -242,7 +240,6 @@ Epoch.prototype._format = {
 	// English ordinal suffix for the day of the month, 2 characters
 	_o: function( j ) {
 		if( j >= 11 && j <= 13 )
-		// if( 11 <= j <= 13 )
 			j += "th";
 
 		else {
@@ -339,21 +336,26 @@ Epoch.prototype._milli = null;
 Epoch.prototype._year = null;
 Epoch.prototype._time = null;
 
-Epoch.prototype.modify = function( val, set, get ) {
-	if( typeof val !== "undefined" ) {
-		val = ( /(\+|-)\d/g.exec( val )
-			? get.call() + parseInt( val )
-			: val );
-		set.call( null, val );
+Epoch.prototype._set = function( val, c, set, get ) {
+	if( typeof get === "undefined" ) {
+		get = set;
+		set = c;
 	}
+
+	// if val is a string preceeded by "+" or "-", get the current value,
+	// parse val to int and do addition/subtraction
+	// else if val is an int (or stringified int), then just set new value
+	set.call( this._d, ( /(\+|-)\d/g.exec( val )
+		? get.call( this._d ) + parseInt( val )
+		: val ) );
+
+
 };
 
-Epoch.prototype.date = function( set ) {
-	if( set ) {
+Epoch.prototype.date = function( val ) {
+	if( val ) {
 		this._date = null;
-		this._d.setDate( ( /(\+|-)\d/g.exec(set)
-			? this._d.getDate() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setDate, this._d.getDate );
 	}
 
 	if( ! this._date )
@@ -362,12 +364,10 @@ Epoch.prototype.date = function( set ) {
 	return this._date;
 };
 
-Epoch.prototype.hour = function( set ) {
-	if( set ) {
+Epoch.prototype.hour = function( val ) {
+	if( val ) {
 		this._hour = null;
-		this._d.setHours( ( /(\+|-)\d/g.exec(set)
-			? this._d.getHours() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setHours, this._d.getHours );
 	}
 
 	if( ! this._hour )
@@ -376,12 +376,10 @@ Epoch.prototype.hour = function( set ) {
 	return this._hour;
 };
 
-Epoch.prototype.min = function( set ) {
-	if( set ) {
+Epoch.prototype.min = function( val ) {
+	if( val ) {
 		this._min = null;
-		this._d.setMinutes( ( /(\+|-)\d/g.exec(set)
-			? this._d.getMinutes() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setMinutes, this._d.getMinutes );
 	}
 
 	if( ! this._min )
@@ -393,9 +391,7 @@ Epoch.prototype.min = function( set ) {
 Epoch.prototype.sec = function( set ) {
 	if( set ) {
 		this._sec = null;
-		this._d.setSeconds( ( /(\+|-)\d/g.exec(set)
-			? this._d.getSeconds() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setSeconds, this._d.getSeconds );
 	}
 
 	if( ! this._sec )
@@ -407,22 +403,18 @@ Epoch.prototype.sec = function( set ) {
 Epoch.prototype.milli = function( set ) {
 	if( set ) {
 		this._milli = null;
-		this._d.setMilliseconds( ( /(\+|-)\d/g.exec(set)
-			? this._d.getMilliseconds() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setMilliseconds, this._d.getMilliseconds );
 	}
 
 	return this._milli;
 };
 
-Epoch.prototype.month = function( set ) {
-	if( set ) {
+Epoch.prototype.month = function( val ) {
+	if( val ) {
 		this._month = null;
-		// console.log(setMonth);
-		// this.modify(set, this._d.setMonth, this._d.getMonth);
-		this._d.setMonth( ( /(\+|-)\d/g.exec(set)
-			? this._d.getMonth() + parseInt( set )
-			: set - 1 ) );
+		if( ! /(\+|-)\d/g.exec( val ) )
+			val = val - 1;
+		this._set( val, this._d.setMonth, this._d.getMonth );
 	}
 
 	if( ! this._month )
@@ -436,9 +428,7 @@ Epoch.prototype.month = function( set ) {
 Epoch.prototype.year = function( set ) {
 	if( set ) {
 		this._year = null;
-		this._d.setFullYear( ( /(\+|-)\d/g.exec(set)
-			? this._d.getFullYear() + parseInt( set )
-			: set ) );
+		this._set( val, this._d.setFullYear, this._d.getFullYear );
 	}
 
 	if( ! this._year )

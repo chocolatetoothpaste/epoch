@@ -1,6 +1,6 @@
 {
 	"name": "epoch.js",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "Simple, elegant Date/Time formatting library",
 	"main": "./epoch.js",
 	"author": {
