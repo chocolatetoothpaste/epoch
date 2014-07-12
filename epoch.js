@@ -80,9 +80,13 @@ Epoch.prototype.from = function( date, rel ) {
 		diff = Math.floor( ( from - this._d ) / 1000 ),
 		seconds = Math.abs( diff );
 
-	delete from, date;
+	// displays "in 1 year" instead of "in 12 monthts"... roughly
+	if( this._d < from && seconds >= 30304745 ) {
+		interval = Math.floor( seconds / 30304745 );
+		unit = this.lang.from.year;
+	}
 
-	if( seconds >= 31536000 ) {
+	else if( seconds >= 31536000 ) {
 		interval = Math.floor( seconds / 31536000 );
 		unit = this.lang.from.year;
 	}
