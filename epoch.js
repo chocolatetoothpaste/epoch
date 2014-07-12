@@ -28,24 +28,29 @@ else {
 Epoch.prototype.format = function( str ) {
 	var f = this._format,
 		// regex breakdown:
+		// (it's about perfect, so modify with extreme caution)
 		// * looks for text surrounded by brackets "[]",
-		// * OR
+		// * OR "|"
 		// * looks for repeating occurences of a character (or just one),
 		// * possibly followed by one "o" (ordinal suffix)
 		rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
 
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
+		// $1 will only be defined if escaped text was found
 		if( typeof $1 === "undefined" ) {
-			// console.log($1)
 			// check for ordinal suffix in format
 			// ($3 would be undefined if $0 was escaped text)
-			return ( $3 === "o" ? f._o( f[$0.replace( "o", "" )]() ) : f[$0]() );
+			return ( $3 === "o"
+				? f._o( f[$0.replace( "o", "" )]() )
+				: f[$0]()
+			);
 		}
+
 		else {
 			return $0;
 		}
+		// strip out brackets
 	} ).replace( /[\[\]]/g, "" );
-
 };
 
 
@@ -389,8 +394,8 @@ Epoch.prototype.min = function( val ) {
 	return this._min;
 };
 
-Epoch.prototype.sec = function( set ) {
-	if( set ) {
+Epoch.prototype.sec = function( val ) {
+	if( val ) {
 		this._sec = null;
 		this._set( val, this._d.setSeconds, this._d.getSeconds );
 	}
@@ -401,8 +406,8 @@ Epoch.prototype.sec = function( set ) {
 	return this._sec;
 };
 
-Epoch.prototype.milli = function( set ) {
-	if( set ) {
+Epoch.prototype.milli = function( val ) {
+	if( val ) {
 		this._milli = null;
 		this._set( val, this._d.setMilliseconds, this._d.getMilliseconds );
 	}
@@ -426,8 +431,8 @@ Epoch.prototype.month = function( val ) {
 	return this._month;
 };
 
-Epoch.prototype.year = function( set ) {
-	if( set ) {
+Epoch.prototype.year = function( val ) {
+	if( val ) {
 		this._year = null;
 		this._set( val, this._d.setFullYear, this._d.getFullYear );
 	}
@@ -477,7 +482,6 @@ Epoch.prototype._lang = {
 			year: 'year',
 			less: 'less than a minute'
 		}
-
 	}
 };
 })();
