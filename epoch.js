@@ -1,6 +1,6 @@
 (function () {
-var root = this;
 
+// constructor
 function Epoch( format, lang ) {
 	this._d = ( format ? new Date( format ) : new Date() );
 	this._format.parent = this;
@@ -8,6 +8,7 @@ function Epoch( format, lang ) {
 	this.lang = this._lang[lang];
 }
 
+// constructor wrapper
 var epoch = function epoch( format, lang ) {
 	return new Epoch( format, lang );
 };
@@ -17,7 +18,7 @@ if( typeof module !== 'undefined' && module.exports ) {
 }
 
 else {
-	root.epoch = epoch;
+	window.epoch = epoch;
 }
 
 
@@ -26,31 +27,38 @@ else {
  */
 
 Epoch.prototype.format = function( str ) {
-	var f = this._format,
-		// regex breakdown:
-		// (it's about perfect, so modify with extreme caution)
-		// * looks for text surrounded by brackets "[]",
-		// * OR "|"
-		// * looks for repeating occurences of a character (or just one),
-		// * possibly followed by one "o" (ordinal suffix)
-		rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
+	try {
+		if( str.length <= 0 )
+			throw new Error('(empty string)');
 
-	return str.replace( rx, function( $0, $1, $2, $3 ) {
-		// $1 will only be defined if escaped text was found
-		if( typeof $1 === "undefined" ) {
-			// check for ordinal suffix in format
-			// ($3 would be undefined if $0 was escaped text)
-			return ( $3 === "o"
-				? f._o( f[$0.replace( "o", "" )]() )
-				: f[$0]()
-			);
-		}
+		var f = this._format,
+			// regex breakdown:
+			// (it's about perfect, so modify with extreme caution)
+			// * looks for text surrounded by brackets "[]",
+			// * OR "|"
+			// * looks for repeating occurences of a character (or just one),
+			// * possibly followed by one "o" (ordinal suffix)
+			rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
 
-		else {
-			return $0;
-		}
-		// strip out brackets
-	} ).replace( /[\[\]]/g, "" );
+		return str.replace( rx, function( $0, $1, $2, $3 ) {
+			// $1 will only be defined if escaped text was found
+			if( typeof $1 === "undefined" ) {
+				// check for ordinal suffix in format
+				// ($3 would be undefined if $0 was escaped text)
+				return ( $3 === "o"
+					? f._o( f[$0.replace( "o", "" )]() )
+					: f[$0]()
+				);
+			}
+
+			else {
+				return $0;
+			}
+			// strip out brackets
+		} ).replace( /[\[\]]/g, "" );
+	} catch( e ) {
+		console.error( 'Invalid format: ' + ( e.message ? e.message : str ) );
+	}
 };
 
 
@@ -80,7 +88,7 @@ Epoch.prototype.from = function( date, rel ) {
 		diff = Math.floor( ( from - this._d ) / 1000 ),
 		seconds = Math.abs( diff );
 
-	// displays "in 1 year" instead of "in 12 monthts"... roughly
+	// displays "in 1 year" instead of "in 12 months"... roughly
 	if( this._d < from && seconds >= 30304745 ) {
 		interval = Math.floor( seconds / 30304745 );
 		unit = this.lang.from.year;
@@ -137,8 +145,7 @@ Epoch.prototype._format = {
 
 	// Lowercase am/pm
 	a: function() {
-		return ( this.parent.hour() > 11
-			? 'pm' : 'am' );
+		return ( this.parent.hour() > 11 ? 'pm' : 'am' );
 	},
 
 	// Uppercase AM/PM
@@ -346,20 +353,13 @@ Epoch.prototype._milli = null;
 Epoch.prototype._year = null;
 Epoch.prototype._time = null;
 
-Epoch.prototype._set = function( val, c, set, get ) {
-	if( typeof get === "undefined" ) {
-		get = set;
-		set = c;
-	}
-
+Epoch.prototype._set = function( val, set, get ) {
 	// if val is a string preceeded by "+" or "-", get the current value,
-	// parse val to int and do addition/subtraction
+	// parse str to int (making it positive or negative) and add to current val
 	// else if val is an int (or stringified int), then just set new value
 	set.call( this._d, ( /(\+|-)\d/g.exec( val )
 		? get.call( this._d ) + parseInt( val )
 		: val ) );
-
-
 };
 
 Epoch.prototype.date = function( val ) {
@@ -454,6 +454,10 @@ Epoch.prototype.day = function() {
 	return this._day;
 };
 
+
+/**
+ * Get the number of milliseconds since the epoch
+ */
 
 Epoch.prototype.time = function(echo) {
 	if( ! this._time )
