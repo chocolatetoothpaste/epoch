@@ -41,8 +41,11 @@ Epoch.prototype.format = function( str ) {
 			rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
 
 		return str.replace( rx, function( $0, $1, $2, $3 ) {
+			var tok = $0;
 			// $1 will only be defined if escaped text was found
 			if( typeof $1 === "undefined" ) {
+				if( typeof f[$0] !== "function" )
+					throw new Error("Invalid format: " + $0);
 				// check for ordinal suffix in format
 				// ($3 would be undefined if $0 was escaped text)
 				return ( $3 === "o"
@@ -57,7 +60,7 @@ Epoch.prototype.format = function( str ) {
 			// strip out brackets
 		} ).replace( /[\[\]]/g, "" );
 	} catch( e ) {
-		console.error( 'Invalid format: ' + ( e.message ? e.message : str ) );
+		console.error( e.message );
 	}
 };
 
