@@ -273,6 +273,7 @@ Epoch.prototype._format = {
 
 	// RFC 1123 formatted date
 	r: function() {
+		console.error('Format identifier \'r\' is deprecated. Use rfc*() functions. See documentation.');
 		return this.parent._d.toUTCString();
 	},
 
@@ -334,6 +335,16 @@ Epoch.prototype._format = {
 	ZZZZ: function() {
 
 	}
+};
+
+// 1123 and 2822 are the same format
+Epoch.prototype.rfc1123 = Epoch.prototype.rfc2822 = function() {
+	return this.parent._d.toUTCString();
+};
+
+
+Epoch.prototype.rfc8601 = function() {
+	return this.format('YYYY-MM-DD[T]hh:mm:ss[+0000]');
 };
 
 /**
