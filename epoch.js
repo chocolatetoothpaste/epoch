@@ -1,23 +1,47 @@
 (function () {
+"use strict";
+
+	var g = {
+		// this is one of the many reasons why javascript is awesome
+		path: Array.prototype.slice
+			.call( document.getElementsByTagName('script'), -1 )[0].src
+			.split( "/" ).slice( 0, -1 ).join( "/" ),
+	};
 
 // constructor
 function Epoch( format, lang ) {
 	this._d = ( format ? new Date( format ) : new Date() );
 	this._format.parent = this;
-	lang = lang || 'en';
+	this.path = g.path;
 	this.lang = this._lang[lang];
 }
 
+
 // constructor wrapper
 var epoch = function epoch( format, lang ) {
+	lang = lang || 'en-us';
+	// locale(lang);
+
 	return new Epoch( format, lang );
 };
 
 if( typeof module !== 'undefined' && module.exports ) {
+	// Epoch.prototype.locale = function() {
+	// 	require('./lang/' + this.lang);
+	// };
+
 	module.exports = epoch;
 }
 
 else {
+	// var locale = function( lang ) {
+	// 	var s = document.createElement( "script" );
+	// 	s.setAttribute("type", "text/javascript");
+	// 	s.setAttribute("src", g.path + "/lang/" + lang + ".js");
+
+	// 	document.getElementsByTagName( "head" )[0].appendChild( s );
+	// }
+
 	window.epoch = epoch;
 }
 
@@ -86,9 +110,11 @@ Epoch.prototype.reset = function() {
 Epoch.prototype.from = function( date, rel ) {
 	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
 
-	var interval = '', unit = '',
-		from = ( date ? new Date( date ) : new Date() )
-		diff = Math.floor( ( from - this._d ) / 1000 ),
+	var interval = '',
+		retval = '',
+		unit = '',
+		from = ( date ? new Date( date ) : new Date() ) - this._d,
+		diff = Math.floor( from / 1000 ),
 		seconds = Math.abs( diff );
 
 	// displays "in 1 year" instead of "in 12 months"... roughly
@@ -124,21 +150,20 @@ Epoch.prototype.from = function( date, rel ) {
 
 	else {
 		interval = this.lang.from.less;
+		unit = this.lang.from.minute;
 	}
 
 	// find out if unit is singular or plural
 	if( typeof interval === 'number' && interval > 1 )
 		unit += 's'
 
-	// check if the date is a value in the past or future,
-	// then put together the relative string
+	// assemble the relative string, past/future
 	if( diff > 0 )
-		interval = rel.pre + " " + interval;
+		retval = rel.pre + ' ' + interval + ' ' + unit;
 	else
-		unit += ( unit === '' ? rel.suf : " " + rel.suf );
+		retval = interval + ' ' + unit + ' ' + rel.suf;
 
-	return interval + " " + unit;
-
+	return retval;
 };
 
 
@@ -342,7 +367,7 @@ Epoch.prototype._format = {
 
 // 1123 and 2822 are the same format
 Epoch.prototype.rfc1123 = Epoch.prototype.rfc2822 = function() {
-	return this.parent._d.toUTCString();
+	return this._d.toUTCString();
 };
 
 
@@ -350,22 +375,12 @@ Epoch.prototype.rfc8601 = function() {
 	return this.format('YYYY-MM-DD[T]hh:mm:ss[+0000]');
 };
 
+
 /**
- * CACHE SECTION ***********************************************************
+ * WRAPPER SECTION *******************************************************
  * here be lizards... changing below this line could break things, careful
  */
 
-Epoch.prototype._d = null;
-Epoch.prototype._date = null;
-Epoch.prototype._day = null;
-Epoch.prototype._week = null;
-Epoch.prototype._month = null;
-Epoch.prototype._hour = null;
-Epoch.prototype._min = null;
-Epoch.prototype._sec = null;
-Epoch.prototype._milli = null;
-Epoch.prototype._year = null;
-Epoch.prototype._time = null;
 
 Epoch.prototype._set = function( val, set, get ) {
 	// if val is a string preceeded by "+" or "-", get the current value,
@@ -378,14 +393,10 @@ Epoch.prototype._set = function( val, set, get ) {
 
 Epoch.prototype.date = function( val ) {
 	if( val ) {
-		this._date = null;
 		this._set( val, this._d.setDate, this._d.getDate );
 	}
 
-	if( ! this._date )
-		this._date = this._d.getDate();
-
-	return this._date;
+	return this._d.getDate();
 };
 
 Epoch.prototype.hour = function( val ) {
@@ -394,78 +405,56 @@ Epoch.prototype.hour = function( val ) {
 		this._set( val, this._d.setHours, this._d.getHours );
 	}
 
-	if( ! this._hour )
-		this._hour = this._d.getHours();
-
-	return this._hour;
+	return this._d.getHours();
 };
 
 Epoch.prototype.min = function( val ) {
 	if( val ) {
-		this._min = null;
 		this._set( val, this._d.setMinutes, this._d.getMinutes );
 	}
 
-	if( ! this._min )
-		this._min = this._d.getMinutes();
-
-	return this._min;
+	return this._d.getMinutes();
 };
 
 Epoch.prototype.sec = function( val ) {
 	if( val ) {
-		this._sec = null;
 		this._set( val, this._d.setSeconds, this._d.getSeconds );
 	}
 
-	if( ! this._sec )
-		this._sec = this._d.getSeconds();
-
-	return this._sec;
+	return this._d.getSeconds();
 };
 
 Epoch.prototype.milli = function( val ) {
 	if( val ) {
-		this._milli = null;
 		this._set( val, this._d.setMilliseconds, this._d.getMilliseconds );
 	}
 
-	return this._milli;
+	return this._d.getMilliseconds();
 };
 
 Epoch.prototype.month = function( val ) {
 	if( val ) {
-		this._month = null;
 		if( ! /(\+|-)\d/g.exec( val ) )
 			val = val - 1;
 		this._set( val, this._d.setMonth, this._d.getMonth );
 	}
 
-	if( ! this._month )
-		// js returns jan = 0, dec = 11... don't know why
-		// don't change this, I've tried it both ways, this is the one true
-		this._month = this._d.getMonth() + 1;
-
-	return this._month;
+	// js returns jan = 0, dec = 11... don't know why
+	// don't change this, I've tried adjusting at different stages
+	// this is the one true way
+	return this._d.getMonth() + 1;
 };
 
 Epoch.prototype.year = function( val ) {
 	if( val ) {
-		this._year = null;
 		this._set( val, this._d.setFullYear, this._d.getFullYear );
 	}
 
-	if( ! this._year )
-		this._year = this._d.getFullYear();
-
-	return this._year;
+	return this._d.getFullYear();
 };
 
 Epoch.prototype.day = function() {
-	if( ! this._day )
-		this._day = this._d.getDay();
-
-	return this._day;
+	return this._d.getDay();
 };
 
 
@@ -473,16 +462,13 @@ Epoch.prototype.day = function() {
  * Get the number of milliseconds since the epoch
  */
 
-Epoch.prototype.time = function(echo) {
-	if( ! this._time )
-		this._time = this._d.getTime();
-
-	return this._time;
+Epoch.prototype.time = function() {
+	return this._d.getTime();
 };
 
 
 Epoch.prototype._lang = {
-	en: {
+	"en-us": {
 		month: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July',
 			'August', 'September', 'October', 'November', 'December' ],
 
@@ -502,8 +488,9 @@ Epoch.prototype._lang = {
 			day: 'day',
 			month: 'month',
 			year: 'year',
-			less: 'less than a minute'
+			less: 'less than a'
 		}
 	}
 };
+
 })();

@@ -1,6 +1,8 @@
 epoch.js - Wonderful Date Formatting and Calculations
 =====================================================
 
+**Starting with version 0.2.0, the "caching" wrappers were removed. This probably won't affect anyone, but if you know what I'm talking about then you'll want to take a look at the changes**
+
 **Easy to use**
 
 	var e = epoch(); // defaults to current date/time
