@@ -62,13 +62,12 @@ Epoch.prototype.format = function( str ) {
 			// * OR "|"
 			// * looks for repeating occurences of a character (or just one),
 			// * possibly followed by one "o" (ordinal suffix)
-			rx = /(\[[^\[]*\])|(\w)\2*(o)?/g;
+			rx = /\[([^\[]*)\]|(\w)\2*(o)?/g;
 
 		return str.replace( rx, function( $0, $1, $2, $3 ) {
-			var tok = $0;
 			// $1 will only be defined if escaped text was found
 			if( typeof $1 === "undefined" ) {
-				if( typeof f[$0] !== "function" )
+				if( typeof f[$0] !== "function" && typeof $3 === "undefined" )
 					throw new Error("Invalid format: " + $0);
 				// check for ordinal suffix in format
 				// ($3 would be undefined if $0 was escaped text)
@@ -79,10 +78,9 @@ Epoch.prototype.format = function( str ) {
 			}
 
 			else {
-				return $0;
+				return $1 || $0;
 			}
-			// strip out brackets
-		} ).replace( /[\[\]]/g, "" );
+		} );
 	} catch( e ) {
 		console.error( e.message );
 	}
@@ -100,12 +98,6 @@ Epoch.prototype.reset = function() {
 	this._milli = this._time = null;
 };
 
-
-/**
- * mine is better
- * needs some love, like a big, elastic band
- * ranges should be a little "looser"
- */
 
 Epoch.prototype.from = function( date, rel ) {
 	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
