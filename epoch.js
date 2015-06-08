@@ -99,7 +99,7 @@ Epoch.prototype.reset = function() {
 };
 
 
-Epoch.prototype.from = function( date, rel ) {
+Epoch.prototype.diff = function( date, rel ) {
 	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
 
 	var interval = '',
@@ -158,6 +158,7 @@ Epoch.prototype.from = function( date, rel ) {
 	return retval;
 };
 
+Epoch.prototype.from = Epoch.prototype.diff;
 
 // collection of functions to return date formats
 
@@ -289,12 +290,6 @@ Epoch.prototype._format = {
 		}
 
 		return j;
-	},
-
-	// RFC 1123 formatted date
-	r: function() {
-		console.error('Format identifier \'r\' is deprecated. Use rfc*() functions. See documentation.');
-		return this.parent._d.toUTCString();
 	},
 
 	// Seconds, with leading zeros
