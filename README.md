@@ -5,29 +5,61 @@ epoch.js - Wonderful Date Formatting and Calculations
 
 The epoch.from() method is being renamed epoch.diff().  Semantically, diff makes more sense as the method name.  Both methods are available for use, but epoch.from() will be removed in the next major release (0.3.0, tentatively).
 
+
 ### Easy to use
 
 	var e = epoch(); // defaults to current date/time
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
 
+
 ### Familiar formatting, just like other popular libraries
 
 	date.format('dddd MMM D, YYYY'); // Sunday Dec 8, 2013
+
 
 ### Sexy Intervals
 
 	date.diff('2012-12-08'); // 1 year ago
 	date.diff('2019-12-08'); // in 6 years
 
+
 ### Format Methods
 
-**epoch.rfc1123** --- same as Date.toUTCString()
+**epoch.rfc1123()** --- same as Date.toUTCString()
 
-**epoch.rfc2822** --- same as Date.toUTCString()
+**epoch.rfc2822()** --- same as Date.toUTCString()
 
-**epoch.rfc8601** --- YYYY-MM-DD[T]hh:mm:ss[+0000]
+**epoch.rfc8601()** --- YYYY-MM-DD[T]hh:mm:ss[+0000]
 
-### Format Tokens
+
+### Setting/Getting
+
+For all methods listed here, if the method is called with no argument, the current value of that date fragment is returned.  If a valid value is supplied, the internal Date object is updated and the updated date fragment returned.
+
+**epoch.date() or epoch.date(23)**
+
+**epoch.hour() or epoch.hour(12)**
+
+**epoch.min() or epoch.min(45)**
+
+**epoch.sec() or epoch.sec(56)**
+
+**epoch.milli() or epoch.milli(192)**
+
+**epoch.month() or epoch.month(11)**
+
+**epoch.year() or epoch.year(2019)**
+
+
+### Formatting
+
+Dates can be formatted using epoch.format() and supplying tokens.  Example:
+
+    // Sunday Dec 8, 2013
+    epoch( '2013-12-08 12:34:56' ).format('dddd MMM D, YYYY');
+
+
+#####Tokens
 
 **a** --- Lowercase am/pm
 
