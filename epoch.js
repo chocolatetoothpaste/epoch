@@ -5,7 +5,7 @@
 exports.epoch = function epoch( format, lang ) {
 	lang = lang || 'en-us';
 
-	// if format does not include time, add zero hour time
+	// if format does not include time, add current time
 	// otherwise GMT offset will push date to the next/previous day (+/- offset)
 	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test(format) ){
 		var cur = new Date();
@@ -48,11 +48,12 @@ Epoch.prototype.format = function( str ) {
 
 		return str.replace( rx, function( $0, $1, $2, $3 ) {
 			// $1 will only be defined if escaped text was found
-			// console.log($0, $1, $2, $3);
 
 			if( typeof $1 === "undefined" ) {
 				if( typeof f[$0] !== "function" && typeof $3 === "undefined" ) {
 					throw new Error("Invalid format: " + $0);
+
+					return;
 				}
 
 				// check for ordinal suffix in format
@@ -77,32 +78,38 @@ Epoch.prototype.format = function( str ) {
  * Reset the date object
  */
 
-Epoch.prototype.reset = function() {
-	// this._d = ( format ? new Date(format) : new Date() );
+Epoch.prototype.reset = function reset() {
 	this._date = this._day = this._week = this._month = null;
 	this._year = this._hour = this._min = this._sec = null;
 	this._milli = this._time = null;
 };
 
 
-Epoch.prototype.diff = function( date, rel ) {
-	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
+/**
+ * Attempt to accept unpredictable date formats and make them parsable
+ */
 
-	var interval = '',
-		retval = '',
-		unit = '',
-		from = ( date ? new Date( date ) : new Date() ) - this._d,
-		diff = Math.floor( from / 1000 ),
-		seconds = Math.abs( diff );
-
-	// displays "in 1 year" instead of "in 12 months"... roughly
-	if( this._d < from && seconds >= 30304745 ) {
-		interval = Math.floor( seconds / 30304745 );
-		unit = this.lang.from.year;
+Epoch.prototype.normalize = function normalize( date ) {
+	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test( date ) ){
+		var d = new Date();
+		date += ' ' + [ d.getHours(), d.getMinutes(), d.getSeconds() ].join(':');
 	}
 
-	else if( seconds >= 31536000 ) {
-		interval = Math.floor( seconds / 31536000 );
+	return date;
+};
+
+
+Epoch.prototype.diff = function( date, rel ) {
+	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
+	date = ( date ? new Date( this.normalize( date ) ) : new Date() );
+
+	var interval = '',
+		unit = '',
+		diff = Math.floor( ( date - this._d ) / 1000 ),
+		seconds = Math.abs( diff );
+
+	if( seconds >= 31536000 || Math.floor( seconds / 2592000 ) === 12 ) {
+		interval = Math.floor( seconds / 31536000 ) || 1;
 		unit = this.lang.from.year;
 	}
 
@@ -131,17 +138,13 @@ Epoch.prototype.diff = function( date, rel ) {
 		unit = this.lang.from.minute;
 	}
 
-	// find out if unit is singular or plural
+	// singular or plural
 	if( typeof interval === 'number' && interval > 1 )
 		unit += 's'
 
-	// assemble the relative string, past/future
-	if( diff > 0 )
-		retval = rel.pre + ' ' + interval + ' ' + unit;
-	else
-		retval = interval + ' ' + unit + ' ' + rel.suf;
+	interval = interval + ' ' + unit;
 
-	return retval;
+	return ( diff > 0 ? rel.pre + ' ' + interval : interval + ' ' + rel.suf );
 };
 
 Epoch.prototype.from = Epoch.prototype.diff;
@@ -305,7 +308,6 @@ Epoch.prototype._format = {
 
 	// A full numeric representation of a year, 4 digits
 	YYYY: function() {
-		console.log(this);
 		return this.year();
 	},
 
@@ -345,13 +347,28 @@ Epoch.prototype.leapYear = function leapYear() {
 };
 
 // 1123 and 2822 are the same format
-Epoch.prototype.rfc1123 = Epoch.prototype.rfc2822 = function rfc1123() {
+Epoch.prototype.rfc1123 = function rfc1123() {
 	return this._d.toUTCString();
 };
 
+Epoch.prototype.rfc2822 = function rfc2822() {
+	return this._d.toUTCString();
+};
 
 Epoch.prototype.rfc8601 = function rfc8601() {
 	return this.format('YYYY-MM-DD[T]hh:mm:ss[+0000]');
+};
+
+Epoch.prototype.sqldate = function sqldate() {
+	return this.format('YYYY-MM-DD');
+};
+
+Epoch.prototype.sqltime = function sqltime() {
+	return this.format('hh:mm:ss');
+};
+
+Epoch.prototype.datetime = function datetime() {
+	return this.format('YYYY-MM-DD hh:mm:ss');
 };
 
 

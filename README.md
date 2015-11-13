@@ -3,7 +3,7 @@ epoch.js - Wonderful Date Formatting and Calculations
 
 **Breaking change**
 
-The epoch.from() method is being renamed epoch.diff().  Semantically, diff makes more sense as the method name.  Both methods are available for use, but epoch.from() will be removed in the next major release (0.3.0, tentatively).
+The epoch.from() method is being renamed epoch.diff().  It might go away at some point, or it might get changed back.
 
 
 ### Easy to use
