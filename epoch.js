@@ -31,10 +31,12 @@ function Epoch( format, lang ) {
  * Break a format down into componenets and execute their formatting fn
  */
 
-Epoch.prototype.format = function( str ) {
+Epoch.prototype.format = function format( str ) {
 	try {
-		if( str.length <= 0 )
-			throw new Error('(empty string)');
+		if( str.length <= 0 ) {
+			throw new Error('No format specified');
+			return;
+		}
 
 		var f = this._format,
 			self = this,
@@ -69,7 +71,7 @@ Epoch.prototype.format = function( str ) {
 			}
 		} );
 	} catch( e ) {
-		console.error( e.message );
+		throw new Error( e.message );
 	}
 };
 
@@ -138,7 +140,7 @@ Epoch.prototype.diff = function( date, rel ) {
 		unit = this.lang.from.minute;
 	}
 
-	// singular or plural
+	// singulural
 	if( typeof interval === 'number' && interval > 1 )
 		unit += 's'
 
@@ -227,12 +229,6 @@ Epoch.prototype._format = {
 	HH: function() {
 		var h = this.hour();
 		return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
-	},
-
-	L: function() {
-		console.warn('Format \'L\' is deprecated, use epoch.leapYear() instead');
-		var y = this.year();
-		return ( ( y % 4 === 0 ) && ( y % 100 !== 0 ) ) || ( y % 400 === 0 );
 	},
 
 	// Minutes with leading zeros
