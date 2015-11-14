@@ -290,7 +290,7 @@ Epoch.prototype._format = {
 
 	// Unix timestamp
 	U: function() {
-		Math.round( this._d.time() / 1000 );
+		return Math.round( this.time() / 1000 );
 	},
 
 	// ISO-8601 week number of year, weeks starting on Monday
@@ -335,6 +335,10 @@ Epoch.prototype._format = {
 	ZZZZ: function() {
 
 	}
+};
+
+Epoch.prototype.timestamp = function timestamp() {
+	return Math.round( this.time() / 1000 );
 };
 
 Epoch.prototype.leapYear = function leapYear() {

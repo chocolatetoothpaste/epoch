@@ -87,8 +87,6 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
 
 **HH** --- 12-hour format of an hour with leading zeros
 
-**L** --- Whether it's a leap year
-
 **mm** --- Minutes with leading zeros
 
 **M** --- Numeric representation of a month, without leading zeros
