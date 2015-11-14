@@ -61,7 +61,7 @@ Epoch.prototype.format = function format( str ) {
 				// check for ordinal suffix in format
 				// ($3 would be undefined if $0 was escaped text)
 				return ( $3 === "o"
-					? f._o.call( self, f[$0.replace( "o", "" )].call(self) )
+					? self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
 					: f[$0].call(self)
 				);
 			}
@@ -260,23 +260,6 @@ Epoch.prototype._format = {
 		return this.lang.month[ this.month() - 1 ];
 	},
 
-	// English ordinal suffix for the day of the month, 2 characters
-	_o: function( j ) {
-		if( j >= 11 && j <= 13 )
-			j += "th";
-
-		else {
-			switch( j % 10 ) {
-				case 1:  j += "st"; break;
-				case 2:  j += "nd"; break;
-				case 3:  j += "rd"; break;
-				default: j += "th"; break;
-			}
-		}
-
-		return j;
-	},
-
 	// Seconds, with leading zeros
 	ss: function() {
 		var ss = this.sec();
@@ -369,6 +352,22 @@ Epoch.prototype.sqltime = function sqltime() {
 
 Epoch.prototype.datetime = function datetime() {
 	return this.format('YYYY-MM-DD hh:mm:ss');
+};
+
+Epoch.prototype.ordinal = function ordinal(num) {
+	if( num >= 11 && num <= 13 )
+		num += "th";
+
+	else {
+		switch( num % 10 ) {
+			case 1:  num += "st"; break;
+			case 2:  num += "nd"; break;
+			case 3:  num += "rd"; break;
+			default: num += "th"; break;
+		}
+	}
+
+	return num;
 };
 
 
