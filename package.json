@@ -1,14 +1,23 @@
 {
-	"name": "epoch.js",
-	"version": "0.2.5",
-	"description": "Simple, elegant Date/Time formatting library",
-	"main": "./epoch.js",
-	"author": {
-		"name": "Ross Paskett",
-		"email": "rpaskett@gmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/chocolatetoothpaste/epoch"
-	}
+  "name": "epoch.js",
+  "version": "0.2.6",
+  "description": "Simple, elegant Date/Time formatting library",
+  "main": "./epoch.js",
+  "author": {
+    "name": "Ross Paskett",
+    "email": "rpaskett@gmail.com"
+  },
+  "files": [
+    "epoch.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chocolatetoothpaste/epoch"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.1"
+  }
 }

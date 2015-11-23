@@ -3,7 +3,7 @@ epoch.js - Wonderful Date Formatting and Calculations
 
 **Breaking change**
 
-The epoch.from() method is being renamed epoch.diff().  It might go away at some point, or it might get changed back.
+The epoch.from() method is reinstated, epoch.diff() will be introduced with new functionality in a future version.  Please update your code.
 
 
 ### Easy to use
@@ -12,43 +12,66 @@ The epoch.from() method is being renamed epoch.diff().  It might go away at some
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
 
 
-### Familiar formatting, just like other popular libraries
+### Familiar formatting tokens
 
 	date.format('dddd MMM D, YYYY'); // Sunday Dec 8, 2013
 
 
-### Sexy Intervals
+### Intervals
 
-	date.diff('2012-12-08'); // 1 year ago
-	date.diff('2019-12-08'); // in 6 years
+	date.from('2012-12-08'); // 1 year ago
+	date.from('2019-12-08'); // in 6 years
+	date.from('2013-12-08 12:34:48'); // less than a minute ago
 
 
-### Format Methods
+### Common Format Methods
+
+**epoch.leapYear() or epoch.leap()** --- true/false if year is leap year
 
 **epoch.rfc1123()** --- same as Date.toUTCString()
 
 **epoch.rfc2822()** --- same as Date.toUTCString()
 
-**epoch.rfc8601()** --- YYYY-MM-DD[T]hh:mm:ss[+0000]
+**epoch.iso8601()** --- YYYY-MM-DD[T]hh:mm:ss[+0000]
 
+**epoch.sqldate()** --- YYYY-MM-DD
+
+**epoch.sqltime()** --- hh:mm:ss
+
+**epoch.datetime()** --- YYYY-MM-DD hh:mm:ss
+
+**epoch.ordinal()** --- pass in any number and get back the number + ordinal suffix
 
 ### Setting/Getting
 
-For all methods listed here, if the method is called with no argument, the current value of that date fragment is returned.  If a valid value is supplied, the internal Date object is updated and the updated date fragment returned.
+For all methods listed here, if the method is called with no argument, the current value of that date fragment is returned.  If a value is supplied, the internal Date object is updated and the updated date fragment returned.  These methods are wrappers for their native equivalents of a similar name.
 
-**epoch.date() or epoch.date(23)**
+#### Possible values:
 
-**epoch.hour() or epoch.hour(12)**
+- 5 or "9", integer or stringified integer - sets value
+- "-2" or "+4" - adds or subtracts from existing value
 
-**epoch.min() or epoch.min(45)**
+#### Setters/Getters:
 
-**epoch.sec() or epoch.sec(56)**
+**epoch.date()**
 
-**epoch.milli() or epoch.milli(192)**
+**epoch.hour()**
 
-**epoch.month() or epoch.month(11)**
+**epoch.min()**
 
-**epoch.year() or epoch.year(2019)**
+**epoch.sec()**
+
+**epoch.milli()**
+
+**epoch.month()**
+
+**epoch.year()**
+
+#### Getters only:
+
+**epoch.day()**
+
+**epoch.time()**
 
 
 ### Formatting
@@ -59,7 +82,7 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
     epoch( '2013-12-08 12:34:56' ).format('dddd MMM D, YYYY');
 
 
-#####Tokens
+#### Tokens
 
 **a** --- Lowercase am/pm
 

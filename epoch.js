@@ -5,24 +5,13 @@
 exports.epoch = function epoch( format, lang ) {
 	lang = lang || 'en-us';
 
-	// if format does not include time, add current time
-	// otherwise GMT offset will push date to the next/previous day (+/- offset)
-	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test(format) ){
-		var cur = new Date();
-		format += ' ' + [
-			cur.getHours(),
-			cur.getMinutes(),
-			cur.getSeconds()
-		].join(':');
-	}
-
 	return new Epoch( format, lang );
 };
 
 
 // constructor
 function Epoch( format, lang ) {
-	this._d = ( format ? new Date( format ) : new Date() );
+	this._d = ( format ? new Date( this.parse( format ) ) : new Date() );
 	this.lang = this._lang[lang];
 }
 
@@ -32,58 +21,44 @@ function Epoch( format, lang ) {
  */
 
 Epoch.prototype.format = function format( str ) {
-	try {
-		if( str.length <= 0 ) {
-			throw new Error('No format specified');
-			return;
+	if( str.length === 0 ) {
+		throw new Error('No format specified');
+	}
+
+	var f = this._format,
+		self = this,
+		// regex breakdown:
+		// (it's about perfect, so modify with extreme caution)
+		// * looks for text surrounded by brackets "[]",
+		// * OR "|"
+		// * looks for repeating occurences of a character (or just one),
+		// * possibly followed by one "o" (ordinal suffix)
+		rx = /\[([^\[]*)\]|(\w)\2*(o)?/g;
+
+	// $0 is format received
+	// $1 is value of escaped text, if used
+	// $2 is repeating format token
+	// $3 is "o" if ordinal suffix is to be used
+	return str.replace( rx, function( $0, $1, $2, $3 ) {
+		// $1 will only be defined if escaped text was found
+
+		if( typeof $1 === "undefined" ) {
+			if( typeof f[$0] !== "function" && typeof $3 === "undefined" ) {
+				throw new Error("Invalid format: " + $0);
+			}
+
+			// check for ordinal suffix in format
+			// ($3 would be undefined if $0 was escaped text)
+			return ( $3 === "o"
+				? self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
+				: f[$0].call(self)
+			);
 		}
 
-		var f = this._format,
-			self = this,
-			// regex breakdown:
-			// (it's about perfect, so modify with extreme caution)
-			// * looks for text surrounded by brackets "[]",
-			// * OR "|"
-			// * looks for repeating occurences of a character (or just one),
-			// * possibly followed by one "o" (ordinal suffix)
-			rx = /\[([^\[]*)\]|(\w)\2*(o)?/g;
-
-		return str.replace( rx, function( $0, $1, $2, $3 ) {
-			// $1 will only be defined if escaped text was found
-
-			if( typeof $1 === "undefined" ) {
-				if( typeof f[$0] !== "function" && typeof $3 === "undefined" ) {
-					throw new Error("Invalid format: " + $0);
-
-					return;
-				}
-
-				// check for ordinal suffix in format
-				// ($3 would be undefined if $0 was escaped text)
-				return ( $3 === "o"
-					? self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
-					: f[$0].call(self)
-				);
-			}
-
-			else {
-				return $1 || $0;
-			}
-		} );
-	} catch( e ) {
-		throw new Error( e.message );
-	}
-};
-
-
-/**
- * Reset the date object
- */
-
-Epoch.prototype.reset = function reset() {
-	this._date = this._day = this._week = this._month = null;
-	this._year = this._hour = this._min = this._sec = null;
-	this._milli = this._time = null;
+		else {
+			return $1 || $0;
+		}
+	} );
 };
 
 
@@ -91,7 +66,11 @@ Epoch.prototype.reset = function reset() {
  * Attempt to accept unpredictable date formats and make them parsable
  */
 
-Epoch.prototype.normalize = function normalize( date ) {
+Epoch.prototype.parse = function parse( date ) {
+	// possible additional date parser
+	// /\b(?:(?:Mon)|(?:Tues?)|(?:Wed(?:nes)?)|(?:Thur?s?)|(?:Fri)|(?:Sat(?:ur)?)|(?:Sun))(?:day)?\b[:\-,]?\s*[a-zA-Z]{3,9}\s+\d{1,2}\s*,?\s*\d{4}/i;
+
+	// standard YYYY-MM-DD format, with common separators
 	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test( date ) ){
 		var d = new Date();
 		date += ' ' + [ d.getHours(), d.getMinutes(), d.getSeconds() ].join(':');
@@ -101,9 +80,9 @@ Epoch.prototype.normalize = function normalize( date ) {
 };
 
 
-Epoch.prototype.diff = function( date, rel ) {
+Epoch.prototype.from = Epoch.prototype.diff = function from( date, rel ) {
 	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
-	date = ( date ? new Date( this.normalize( date ) ) : new Date() );
+	date = ( date ? new Date( this.parse( date ) ) : new Date() );
 
 	var interval = '',
 		unit = '',
@@ -115,6 +94,7 @@ Epoch.prototype.diff = function( date, rel ) {
 		unit = this.lang.from.year;
 	}
 
+	// just average it out to 30 days
 	else if( seconds >= 2592000 ) {
 		interval = Math.floor( seconds / 2592000 );
 		unit = this.lang.from.month;
@@ -149,55 +129,53 @@ Epoch.prototype.diff = function( date, rel ) {
 	return ( diff > 0 ? rel.pre + ' ' + interval : interval + ' ' + rel.suf );
 };
 
-Epoch.prototype.from = Epoch.prototype.diff;
 
 // collection of functions to return date formats
-
 Epoch.prototype._format = {
 
 	// Lowercase am/pm
-	a: function() {
+	a: function a() {
 		return ( this.hour() > 11 ? 'pm' : 'am' );
 	},
 
 	// Uppercase AM/PM
-	A: function() {
+	A: function A() {
 		return ( this.hour() > 11 ? 'PM' : 'AM' );
 	},
 
 	// Numeric representation of the day of the week, 0 - 6 : Sun - Sat
-	d: function() {
+	d: function d() {
 		return this.day();
 	},
 
 	// Numeric representation of the day of the week, 1 - 7 : Sun - Sat
-	dd: function() {
+	dd: function dd() {
 		return this.day() + 1;
 	},
 
 	// A textual representation of a day, three letters
-	ddd: function() {
+	ddd: function ddd() {
 		return this.lang.d[ this.day() ];
 	},
 
 	// A full textual representation of the day of the week
-	dddd: function() {
+	dddd: function dddd() {
 		return this.lang.day[ this.day() ]
 	},
 
 	// Day of the month without leading zeros
-	D: function() {
+	D: function D() {
 		return this.date();
 	},
 
 	// Day of the month with leading zeros
-	DD: function() {
+	DD: function DD() {
 		var d = this.date();
 		return ( d < 10 ? '0' + d : d );
 	},
 
 	// The day of the year (starting from 0)
-	DDD: function() {
+	DDD: function DDD() {
 		var doy = new Date( this.year(), 0, 0 );
 		return Math.ceil( ( this._d - doy ) / 86400000 );
 	},
@@ -209,152 +187,157 @@ Epoch.prototype._format = {
 	// },
 
 	// 24-hour format of an hour without leading zeros
-	h: function() {
+	h: function h() {
 		return this.hour();
 	},
 
 	// 12-hour format of an hour without leading zeros
-	H: function() {
+	H: function H() {
 		var h = this.hour();
 		return ( h > 12 ? h -= 12 : h );
 	},
 
 	// 24-hour format of an hour with leading zeros
-	hh: function() {
+	hh: function hh() {
 		var hh = this.hour();
 		return ( hh < 10 ? '0' + hh : hh );
 	},
 
 	// 12-hour format of an hour with leading zeros
-	HH: function() {
+	HH: function HH() {
 		var h = this.hour();
 		return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 	},
 
 	// Minutes with leading zeros
-	mm: function() {
+	mm: function mm() {
 		var mm = this.min();
 		return ( mm < 10 ? '0' + mm : mm );
 	},
 
 	// Numeric representation of a month, without leading zeros
-	M: function() {
+	M: function M() {
 		return this.month();
 	},
 
 	// Numeric representation of a month, with leading zeros
-	MM: function() {
+	MM: function MM() {
 		var mm = this.month();
 		return ( mm < 10 ? '0' + mm : mm );
 	},
 
 	// A short textual representation of a month, three letters
-	MMM: function() {
+	MMM: function MMM() {
 		// textual representations should be abstracted into
 		// pluggable language files
 		return this.lang.mon[ this.month() - 1 ];
 	},
 
 	// A full textual representation of a month, such as January or March
-	MMMM: function() {
+	MMMM: function MMMM() {
 		return this.lang.month[ this.month() - 1 ];
 	},
 
 	// Seconds, with leading zeros
-	ss: function() {
+	ss: function ss() {
 		var ss = this.sec();
 		return ( ss < 10 ? '0' + ss : ss );
 	},
 
 	// Milliseconds
-	u: function() {
+	u: function u() {
 		return this.milli();
 	},
 
 	// Unix timestamp
-	U: function() {
+	U: function U() {
 		return Math.round( this.time() / 1000 );
 	},
 
 	// ISO-8601 week number of year, weeks starting on Monday
-	ww: function() {
+	ww: function ww() {
 		var d = new Date( this.year(), 0, 1 );
 		d = Math.ceil( ( this._d - d ) / 86400000 );
 		d += this.date();
-		d -= this.day( true ) + 10;
+		d -= this.day() + 10;
 		return Math.floor( d / 7 );
 	},
 
 	// A full numeric representation of a year, 4 digits
-	YYYY: function() {
+	YYYY: function YYYY() {
 		return this.year();
 	},
 
 	// A two digit representation of a year
-	YY: function() {
+	YY: function YY() {
 		return parseInt( this.year().toString().substr(-2) );
 	},
 
 	// 4 digit timezone offset with sign, ex: +/-0000
-	Z: function() {
+	Z: function Z() {
 		var z = -( this._d.getTimezoneOffset() / .6 );
 		var sign = ( z >= 0 ? '+' : '-' );
-		return sign + this.zero( Math.abs(z), 4 );
+		return sign + ( '0000' + Math.abs(z) ).slice(-4);
 	},
 
-	ZZ: function() {
+	ZZ: function ZZ() {
 		var z = -( this._d.getTimezoneOffset() / .6 );
 		var sign = ( z >= 0 ? '+' : '-' );
-		z = this.zero( Math.abs(z), 4 );
+		z = ( '0000' + Math.abs(z) ).slice(-4);
 		return sign + [ z.slice(0,2), z.slice(2,4) ].join(':');
 	},
 
 	// 3 letter time zone abbrev
-	ZZZ: function() {
+	ZZZ: function ZZZ() {
 		return this._d.toString().match(/\((\w*)\)/)[1];
-	},
+	}
 
 	// return full time zone name
-	ZZZZ: function() {
+	// ZZZZ: function ZZZZ() {
 
-	}
+	// }
 };
 
+
+// unix timestamp
 Epoch.prototype.timestamp = function timestamp() {
 	return Math.round( this.time() / 1000 );
 };
 
-Epoch.prototype.leapYear = function leapYear() {
+
+// true/false if year is leap year
+Epoch.prototype.leap = Epoch.prototype.leapYear = function leapYear() {
 	var y = this.year();
 	return ( ( y % 4 === 0 ) && ( y % 100 !== 0 ) ) || ( y % 400 === 0 );
 };
 
+
 // 1123 and 2822 are the same format
-Epoch.prototype.rfc1123 = function rfc1123() {
+Epoch.prototype.rfc2822 = Epoch.prototype.rfc1123 = function rfc1123_rfc2822() {
 	return this._d.toUTCString();
 };
 
-Epoch.prototype.rfc2822 = function rfc2822() {
-	return this._d.toUTCString();
-};
-
-Epoch.prototype.rfc8601 = function rfc8601() {
+Epoch.prototype.rfc8601 = Epoch.prototype.iso8601 = function iso8601() {
 	return this.format('YYYY-MM-DD[T]hh:mm:ss[+0000]');
 };
 
+// format accepted by SQL DATE column type
 Epoch.prototype.sqldate = function sqldate() {
 	return this.format('YYYY-MM-DD');
 };
 
+// format accepted by SQL TIME column type
 Epoch.prototype.sqltime = function sqltime() {
 	return this.format('hh:mm:ss');
 };
 
+// format accepted by SQL DATETIME column type
 Epoch.prototype.datetime = function datetime() {
 	return this.format('YYYY-MM-DD hh:mm:ss');
 };
 
-Epoch.prototype.ordinal = function ordinal(num) {
+// return number + ordinal suffix for num
+Epoch.prototype.ordinal = function ordinal( num ) {
 	if( num >= 11 && num <= 13 )
 		num += "th";
 
@@ -428,8 +411,8 @@ Epoch.prototype.milli = function( val ) {
 
 Epoch.prototype.month = function( val ) {
 	if( val ) {
-		if( ! /(\+|-)\d/g.exec( val ) )
-			val = val - 1;
+		if( ! /(\+|-)/g.exec( val ) )
+			val = parseInt(val) - 1;
 		this._set( val, this._d.setMonth, this._d.getMonth );
 	}
 
@@ -449,11 +432,6 @@ Epoch.prototype.year = function( val ) {
 Epoch.prototype.day = function() {
 	return this._d.getDay();
 };
-
-
-/**
- * Get the number of milliseconds since the epoch
- */
 
 Epoch.prototype.time = function() {
 	return this._d.getTime();
