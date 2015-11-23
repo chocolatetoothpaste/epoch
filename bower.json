@@ -1,7 +1,7 @@
 {
   "name": "epoch.js",
   "main": "epoch.js",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "homepage": "https://github.com/chocolatetoothpaste/epoch",
   "authors": [
     "Ross Paskett <ross@paskett.me>"
@@ -18,7 +18,11 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    "test*",
+    "tests",
+    "gulpfile.js",
+    "package.json",
+    "*.sublime-*",
+    "lang/"
   ]
 }
