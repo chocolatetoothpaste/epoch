@@ -291,7 +291,7 @@ Epoch.prototype._format = {
 	},
 
 	ZZ: function ZZ() {
-		var z = this._format.Z();
+		var z = this._format.Z.call(this);
 		return [ z.slice(0,3), z.slice(3,5) ].join(':');
 	},
 
