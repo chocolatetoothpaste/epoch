@@ -209,6 +209,11 @@ Epoch.prototype._format = {
 		return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 	},
 
+	// Minutes without leading zeros
+	m: function m() {
+		return this.min();
+	},
+
 	// Minutes with leading zeros
 	mm: function mm() {
 		var mm = this.min();
@@ -236,6 +241,11 @@ Epoch.prototype._format = {
 	// A full textual representation of a month, such as January or March
 	MMMM: function MMMM() {
 		return this.lang.month[ this.month() - 1 ];
+	},
+
+	// Seconds, without leading zeros
+	s: function s() {
+		return this.sec();
 	},
 
 	// Seconds, with leading zeros
@@ -270,7 +280,7 @@ Epoch.prototype._format = {
 
 	// A two digit representation of a year
 	YY: function YY() {
-		return parseInt( this.year().toString().substr(-2) );
+		return this.year().toString().substr(-2);
 	},
 
 	// 4 digit timezone offset with sign, ex: +/-0000
@@ -281,21 +291,14 @@ Epoch.prototype._format = {
 	},
 
 	ZZ: function ZZ() {
-		var z = -( this._d.getTimezoneOffset() / .6 );
-		var sign = ( z >= 0 ? '+' : '-' );
-		z = ( '0000' + Math.abs(z) ).slice(-4);
-		return sign + [ z.slice(0,2), z.slice(2,4) ].join(':');
+		var z = this._format.Z();
+		return [ z.slice(0,3), z.slice(3,5) ].join(':');
 	},
 
 	// 3 letter time zone abbrev
 	ZZZ: function ZZZ() {
 		return this._d.toString().match(/\((\w*)\)/)[1];
 	}
-
-	// return full time zone name
-	// ZZZZ: function ZZZZ() {
-
-	// }
 };
 
 

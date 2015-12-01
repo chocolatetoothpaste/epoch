@@ -7,6 +7,10 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 
 
 ### Easy to use
+	npm install epoch.js
+
+	var e = require('epoch.js').epoch();
+	var date = require('epoch.js').epoch('2013-12-08 12:34:56');
 
 	var e = epoch(); // defaults to current date/time
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
@@ -110,6 +114,8 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
 
 **HH** --- 12-hour format of an hour with leading zeros
 
+**m** --- Minutes without leading zeros
+
 **mm** --- Minutes with leading zeros
 
 **M** --- Numeric representation of a month, without leading zeros
@@ -121,6 +127,8 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
 **MMMM** --- A full textual representation of a month, such as January or March
 
 **o** --- Ordinal suffix, can be used in conjuction with virtually any token. Example: Do, hho, Mo, etc...
+
+**s** --- Seconds, without leading zeros
 
 **ss** --- Seconds, with leading zeros
 
