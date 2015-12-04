@@ -2,11 +2,19 @@
 "use strict";
 
 // constructor wrapper
-exports.epoch = function epoch( format, lang ) {
+function epoch( format, lang ) {
 	lang = lang || 'en-us';
 
 	return new Epoch( format, lang );
 };
+
+
+if( typeof module !== "undefined" && module.exports ) {
+	module.exports = epoch;
+}
+else {
+	window.epoch = epoch;
+}
 
 
 // constructor

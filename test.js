@@ -1,4 +1,4 @@
-var epoch = require('./epoch').epoch;
+var epoch = require('./epoch');
 
 console.log(epoch().format('YYYY'));
 // epoch.epoch

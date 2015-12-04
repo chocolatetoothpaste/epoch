@@ -1,6 +1,10 @@
 epoch.js - Wonderful Date Formatting and Calculations
 =====================================================
 
+**Important Notice**
+
+Something weird happened right around version 0.2.6 or 0.2.7 that changed the way epoch was exported.  I don't know or understand what changed, so the code to export had to be changed.  Because of this, a breaking change is possible.  See "Easy to use" section below for how to correctly require and use epoch.  Unit testing is being built to make sure this mistake does not happen again.  Sorry for the inconvenience.
+
 **Breaking change**
 
 The epoch.from() method is reinstated, epoch.diff() will be introduced with new functionality in a future version.  Please update your code.
@@ -9,8 +13,10 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 ### Easy to use
 	npm install epoch.js
 
-	var e = require('epoch.js').epoch();
-	var date = require('epoch.js').epoch('2013-12-08 12:34:56');
+	var epoch = require('epoch.js');
+
+	var e = epoch();
+	var date = epoch('2013-12-08 12:34:56');
 
 	var e = epoch(); // defaults to current date/time
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
