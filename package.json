@@ -10,6 +10,12 @@
   "files": [
     "epoch.js"
   ],
+  "keywords": [
+    "epoch",
+    "date",
+    "time",
+    "date-time"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/chocolatetoothpaste/epoch"

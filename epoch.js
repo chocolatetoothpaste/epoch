@@ -217,6 +217,15 @@ Epoch.prototype._format = {
 		return ( h > 12 ? h -= 12 : ( h < 10 ? '0' + h : h ) );
 	},
 
+	l: function l() {
+		var d = epoch(this._d.getTime());
+		d.date(1);
+		d.month('+1');
+		d.date(0);
+
+		return d.date();
+	},
+
 	// Minutes without leading zeros
 	m: function m() {
 		return this.min();
@@ -381,7 +390,7 @@ Epoch.prototype._set = function( val, set, get ) {
 };
 
 Epoch.prototype.date = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setDate, this._d.getDate );
 	}
 
@@ -389,7 +398,7 @@ Epoch.prototype.date = function( val ) {
 };
 
 Epoch.prototype.hour = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setHours, this._d.getHours );
 	}
 
@@ -397,7 +406,7 @@ Epoch.prototype.hour = function( val ) {
 };
 
 Epoch.prototype.min = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setMinutes, this._d.getMinutes );
 	}
 
@@ -405,7 +414,7 @@ Epoch.prototype.min = function( val ) {
 };
 
 Epoch.prototype.sec = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setSeconds, this._d.getSeconds );
 	}
 
@@ -413,7 +422,7 @@ Epoch.prototype.sec = function( val ) {
 };
 
 Epoch.prototype.milli = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setMilliseconds, this._d.getMilliseconds );
 	}
 
@@ -421,7 +430,7 @@ Epoch.prototype.milli = function( val ) {
 };
 
 Epoch.prototype.month = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		if( ! /(\+|-)/g.exec( val ) )
 			val = parseInt(val) - 1;
 		this._set( val, this._d.setMonth, this._d.getMonth );
@@ -433,7 +442,7 @@ Epoch.prototype.month = function( val ) {
 };
 
 Epoch.prototype.year = function( val ) {
-	if( val ) {
+	if( typeof val !== 'undefined' ) {
 		this._set( val, this._d.setFullYear, this._d.getFullYear );
 	}
 
