@@ -351,6 +351,16 @@ Epoch.prototype.sqltime = function sqltime() {
 	return this.format('hh:mm:ss');
 };
 
+// format accepted by SQL TIME column type
+Epoch.prototype.sqleod = function sqleod() {
+	return this.format('YYYY-MM-DD [23:59:59]');
+};
+
+// format accepted by SQL TIME column type
+Epoch.prototype.sqlsod = function sqlsod() {
+	return this.format('YYYY-MM-DD [00:00:00]');
+};
+
 // format accepted by SQL DATETIME column type
 Epoch.prototype.datetime = function datetime() {
 	return this.format('YYYY-MM-DD hh:mm:ss');

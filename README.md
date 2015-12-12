@@ -120,6 +120,8 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
 
 **HH** --- 12-hour format of an hour with leading zeros
 
+**l** --- Last day of the month
+
 **m** --- Minutes without leading zeros
 
 **mm** --- Minutes with leading zeros
