@@ -326,7 +326,7 @@ Epoch.prototype.timestamp = function timestamp() {
 
 
 // true/false if year is leap year
-Epoch.prototype.leap = Epoch.prototype.leapYear = function leapYear() {
+Epoch.prototype.leap = Epoch.prototype.leapYear = function leap_leapYear() {
 	var y = this.year();
 	return ( ( y % 4 === 0 ) && ( y % 100 !== 0 ) ) || ( y % 400 === 0 );
 };

@@ -1,6 +1,10 @@
 epoch.js - Wonderful Date Formatting and Calculations
 =====================================================
 
+**Cool new methods**
+
+`epoch.sqlsod()` and `epoch.sqleod()` were added for conveniently creating an SQL datetime value that is start of day or end of day.  See "Common Format Methods" section below.
+
 **Important Notice**
 
 Something weird happened right around version 0.2.6 or 0.2.7 that changed the way epoch was exported.  I don't know or understand what changed, so the code to export had to be changed.  Because of this, a breaking change is possible.  See "Easy to use" section below for how to correctly require and use epoch.  Unit testing is being built to make sure this mistake does not happen again.  Sorry for the inconvenience.
@@ -25,6 +29,7 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 ### Familiar formatting tokens
 
 	date.format('dddd MMM D, YYYY'); // Sunday Dec 8, 2013
+	epoch('2015-05-04').format('MMMM [the] Do [be with you]') // May the 4th be with you
 
 
 ### Intervals
@@ -47,6 +52,10 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 **epoch.sqldate()** --- YYYY-MM-DD
 
 **epoch.sqltime()** --- hh:mm:ss
+
+**epoch.sqlsod()** --- start of day, YYYY-MM-DD [00:00:00]
+
+**epoch.sqleod()** --- end of day, YYYY-MM-DD [23:59:59]
 
 **epoch.datetime()** --- YYYY-MM-DD hh:mm:ss
 
