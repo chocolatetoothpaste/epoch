@@ -7,7 +7,7 @@ epoch.js - Wonderful Date Formatting and Calculations
 
 **Important Notice**
 
-A native date object was stored internally at epoch._d.  If you were using this (probably not, it was undocumented) it is no longer stored there.  Use epoch.native() if you need to access the native object.
+A native date object was stored internally at epoch._d.  If you were using this (probably not, it was undocumented) it is no longer stored there.  Use epoch.native if you need to access the native object.
 
 Something weird happened right around version 0.2.6 or 0.2.7 that changed the way epoch was exported.  I don't know or understand what changed, so the code to export had to be changed.  Because of this, a breaking change is possible.  See "Easy to use" section below for how to correctly require and use epoch.  Unit testing is being built to make sure this mistake does not happen again.  Sorry for the inconvenience.
 
@@ -21,9 +21,6 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 
 	var epoch = require('epoch.js');
 
-	var e = epoch();
-	var date = epoch('2013-12-08 12:34:56');
-
 	var e = epoch(); // defaults to current date/time
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
 
@@ -31,7 +28,11 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 
 	// months numbers run from 0 - 11 in native object
 	var obj = new Date(1995, 11, 17);
-	epoch(obj).format('MMM, d'); // Dec 17, 1995
+	epoch(obj).format('MMM D, YYYY'); // Dec 17, 1995
+
+	// clone an epoch object
+	var f = epoch(date);
+	f.format('YYYY-MM-DD'); // 2013-12-08
 
 
 ### Familiar formatting tokens
@@ -99,9 +100,6 @@ For all methods listed here, if the method is called with no argument, the curre
 **epoch.day()**
 
 **epoch.time()**
-
-**epoch.native()** --- returns the native JavaScript Date object used by epoch
-
 
 ### Formatting
 

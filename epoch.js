@@ -1,19 +1,6 @@
 (function (exports) {
 "use strict";
 
-var _g = {
-	set: function set( val, set, get ) {
-		// if val is a string preceeded by "+" or "-", parse to int
-		// (making it positive or negative) and add to current val
-		// else if val is an int (or stringified int), just set new value
-		set.call( _g.native, ( /(\+|-)\d/g.exec( val )
-			? get.call( _g.native ) + parseInt( val )
-			: val ) );
-	},
-
-	native: null
-};
-
 // constructor wrapper
 function epoch( format, lang ) {
 	lang = lang || 'en-us';
@@ -33,13 +20,16 @@ else {
 // constructor
 function Epoch( format, lang ) {
 	if( format instanceof Date ) {
-		_g.native = format;
+		this.native = format;
 	}
-	else if( format === 'string' || format instanceof String ) {
-		_g.native = new Date( this.parse( format ) );
+	else if( format instanceof Epoch ) {
+		this.native = new Date( format.time() );
+	}
+	else if( format ) {
+		this.native = new Date( this.parse( format ) );
 	}
 	else {
-		_g.native = new Date();
+		this.native = new Date();
 	}
 
 	this.lang = this._lang[lang];
@@ -116,7 +106,7 @@ Epoch.prototype.from = Epoch.prototype.diff = function from( date, rel ) {
 
 	var interval = '',
 		unit = '',
-		diff = Math.floor( ( date - _g.native ) / 1000 ),
+		diff = Math.floor( ( date - this.native ) / 1000 ),
 		seconds = Math.abs( diff );
 
 	if( seconds >= 31536000 || Math.floor( seconds / 2592000 ) === 12 ) {
@@ -207,13 +197,13 @@ Epoch.prototype._format = {
 	// The day of the year (starting from 0)
 	DDD: function DDD() {
 		var doy = new Date( this.year(), 0, 0 );
-		return Math.ceil( ( _g.native - doy ) / 86400000 );
+		return Math.ceil( ( this.native - doy ) / 86400000 );
 	},
 
 	// The day of the year (starting from 0)
 	// DDDD: function() {
 	// 	var doy = new Date( this.year(), 0, 0 );
-	// 	return Math.ceil( ( _g.native - doy ) / 86400000 );
+	// 	return Math.ceil( ( this.native - doy ) / 86400000 );
 	// },
 
 	// 24-hour format of an hour without leading zeros
@@ -240,7 +230,8 @@ Epoch.prototype._format = {
 	},
 
 	LL: function LL() {
-		var d = epoch(_g.native.getTime());
+		var d = epoch(this.native.getTime());
+
 		d.date(1);
 		d.month('+1');
 		d.date(0);
@@ -306,7 +297,7 @@ Epoch.prototype._format = {
 	// ISO-8601 week number of year, weeks starting on Monday
 	ww: function ww() {
 		var d = new Date( this.year(), 0, 1 );
-		d = Math.ceil( ( _g.native - d ) / 86400000 );
+		d = Math.ceil( ( this.native - d ) / 86400000 );
 		d += this.date();
 		d -= this.day() + 10;
 		return Math.floor( d / 7 );
@@ -324,7 +315,7 @@ Epoch.prototype._format = {
 
 	// 4 digit timezone offset with sign, ex: +/-0000
 	Z: function Z() {
-		var z = -( _g.native.getTimezoneOffset() / .6 );
+		var z = -( this.native.getTimezoneOffset() / .6 );
 		var sign = ( z >= 0 ? '+' : '-' );
 		return sign + ( '0000' + Math.abs(z) ).slice(-4);
 	},
@@ -336,7 +327,7 @@ Epoch.prototype._format = {
 
 	// 3 letter time zone abbrev
 	ZZZ: function ZZZ() {
-		return _g.native.toString().match(/\((\w*)\)/)[1];
+		return this.native.toString().match(/\((\w*)\)/)[1];
 	}
 };
 
@@ -356,7 +347,7 @@ Epoch.prototype.leap = Epoch.prototype.leapYear = function leap_leapYear() {
 
 // 1123 and 2822 are the same format
 Epoch.prototype.rfc2822 = Epoch.prototype.rfc1123 = function rfc1123_rfc2822() {
-	return _g.native.toUTCString();
+	return this.native.toUTCString();
 };
 
 Epoch.prototype.rfc8601 = Epoch.prototype.iso8601 = function iso8601() {
@@ -405,10 +396,6 @@ Epoch.prototype.ordinal = function ordinal( num ) {
 	return num;
 };
 
-Epoch.prototype.native = function native() {
-	return _g.native;
-};
-
 
 /**
  * WRAPPER SECTION *******************************************************
@@ -416,72 +403,82 @@ Epoch.prototype.native = function native() {
  */
 
 
+Epoch.prototype._set = function _set( val, set, get ) {
+	// if val is a string preceeded by "+" or "-", parse to int
+	// (making it positive or negative) and add to current val
+	// else if val is an int (or stringified int), just set new value
+	set.call( this.native, ( /(\+|-)\d/g.exec( val )
+		? get.call( this.native ) + parseInt( val )
+		: val ) );
+}
+
+
 Epoch.prototype.date = function date( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setDate, _g.native.getDate );
+		this._set( val, this.native.setDate, this.native.getDate );
 	}
 
-	return _g.native.getDate();
+	return this.native.getDate();
 };
 
 Epoch.prototype.hour = function hour( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setHours, _g.native.getHours );
+		this._set( val, this.native.setHours, this.native.getHours );
 	}
 
-	return _g.native.getHours();
+	return this.native.getHours();
 };
 
 Epoch.prototype.min = function min( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setMinutes, _g.native.getMinutes );
+		this._set( val, this.native.setMinutes, this.native.getMinutes );
 	}
 
-	return _g.native.getMinutes();
+	return this.native.getMinutes();
 };
 
 Epoch.prototype.sec = function sec( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setSeconds, _g.native.getSeconds );
+		this._set( val, this.native.setSeconds, this.native.getSeconds );
 	}
 
-	return _g.native.getSeconds();
+	return this.native.getSeconds();
 };
 
 Epoch.prototype.milli = function milli( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setMilliseconds, _g.native.getMilliseconds );
+		this._set( val, this.native.setMilliseconds, this.native.getMilliseconds );
 	}
 
-	return _g.native.getMilliseconds();
+	return this.native.getMilliseconds();
 };
 
 Epoch.prototype.month = function month( val ) {
 	if( typeof val !== 'undefined' ) {
 		if( ! /(\+|-)/g.exec( val ) )
 			val = parseInt(val) - 1;
-		_g.set( val, _g.native.setMonth, _g.native.getMonth );
+		this._set( val, this.native.setMonth, this.native.getMonth );
 	}
 
 	// js returns jan = 0, dec = 11... don't know why
 	// don't change this, this is the one true way
-	return _g.native.getMonth() + 1;
+	return this.native.getMonth() + 1;
 };
 
 Epoch.prototype.year = function year( val ) {
 	if( typeof val !== 'undefined' ) {
-		_g.set( val, _g.native.setFullYear, _g.native.getFullYear );
+		this._set( val, this.native.setFullYear, this.native.getFullYear );
 	}
 
-	return _g.native.getFullYear();
+	return this.native.getFullYear();
 };
 
 Epoch.prototype.day = function day() {
-	return _g.native.getDay();
+	return this.native.getDay();
 };
 
 Epoch.prototype.time = function time() {
-	return _g.native.getTime();
+	return this.native.getTime();
 };
 
 
