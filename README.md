@@ -7,6 +7,8 @@ epoch.js - Wonderful Date Formatting and Calculations
 
 **Important Notice**
 
+A native date object was stored internally at epoch._d.  If you were using this (probably not, it was undocumented) it is no longer stored there.  Use epoch.native() if you need to access the native object.
+
 Something weird happened right around version 0.2.6 or 0.2.7 that changed the way epoch was exported.  I don't know or understand what changed, so the code to export had to be changed.  Because of this, a breaking change is possible.  See "Easy to use" section below for how to correctly require and use epoch.  Unit testing is being built to make sure this mistake does not happen again.  Sorry for the inconvenience.
 
 **Breaking change**
@@ -24,6 +26,12 @@ The epoch.from() method is reinstated, epoch.diff() will be introduced with new 
 
 	var e = epoch(); // defaults to current date/time
 	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
+
+	// epoch now accepts a native Date object as an argument (and should have a long time ago)
+
+	// months numbers run from 0 - 11 in native object
+	var obj = new Date(1995, 11, 17);
+	epoch(obj).format('MMM, d'); // Dec 17, 1995
 
 
 ### Familiar formatting tokens
@@ -92,6 +100,8 @@ For all methods listed here, if the method is called with no argument, the curre
 
 **epoch.time()**
 
+**epoch.native()** --- returns the native JavaScript Date object used by epoch
+
 
 ### Formatting
 
@@ -129,7 +139,7 @@ Dates can be formatted using epoch.format() and supplying tokens.  Example:
 
 **HH** --- 12-hour format of an hour with leading zeros
 
-**l** --- Last day of the month
+**LL** --- Last day of the month.  Example: YYYY-MM-LL
 
 **m** --- Minutes without leading zeros
 
