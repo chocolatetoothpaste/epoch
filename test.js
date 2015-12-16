@@ -280,20 +280,142 @@ exports.shorthand = function shorthand(test) {
 		'time()'
 	);
 
-	// test.deepEqual(
-	// 	a.year('+12'),
-	// 	'2022',
-	// 	'year(+12)'
-	// );
+	test.deepEqual(
+		c.hour(),
+		'8',
+		'hour()'
+	);
 
-	// test.deepEqual(
-	// 	c.year('-4'),
-	// 	'1980',
-	// 	'year(-4)'
-	// );
+	test.deepEqual(
+		c.hour('-3'),
+		'5',
+		'hour(-3)'
+	);
+
+	test.deepEqual(
+		a.hour('+5'),
+		'17',
+		'hour(+5)'
+	);
+
+	test.deepEqual(
+		a.hour('9'),
+		'9',
+		'hour(\'9\')'
+	);
+
+	test.deepEqual(
+		c.hour(12),
+		'12',
+		'hour(12)'
+	);
+
+	test.deepEqual(
+		b.min(),
+		'43',
+		'min()'
+	);
+
+	test.deepEqual(
+		b.min('-12'),
+		'31',
+		'min(-12)'
+	);
+
+	test.deepEqual(
+		a.min('+5'),
+		'39',
+		'min(+5)'
+	);
+
+	test.deepEqual(
+		a.min('56'),
+		'56',
+		'min(\'56\')'
+	);
+
+	b.min(43);
+
+	test.deepEqual(
+		b.min('-55'),
+		'48',
+		'min(-55)'
+	);
+
+	test.deepEqual(
+		b.hour(),
+		'20',
+		'subtracted minutes roll back hour'
+	);
+
+	b.min('+120');
+
+	test.deepEqual(
+		b.hour(),
+		'22',
+		'added minutes moves hour forward'
+	);
+
+	// resetting values
+	b.hour(21);
+	b.min(43);
+
+	test.deepEqual(
+		a.sec(),
+		'56',
+		'sec()'
+	);
+
+	test.deepEqual(
+		a.sec('-15'),
+		'41',
+		'sec(-15)'
+	);
+
+	test.deepEqual(
+		b.sec('+9'),
+		'19',
+		'sec(+9)'
+	);
+
+	test.deepEqual(
+		b.sec('10'),
+		'10',
+		'min(\'10\')'
+	);
+
+	test.deepEqual(
+		a.sec(56),
+		'56',
+		'sec(56)'
+	);
+
+	test.deepEqual(
+		c.sec('+200'),
+		'2',
+		'sec(\'+200\')'
+	);
+
+	test.deepEqual(
+		c.min(),
+		'3',
+		'adding seconds moves minutes forward'
+	);
+
+	// resetting values
+	c.sec(42);
+	c.min(59);
+	c.hour(8);
+
+	c.sec('-60');
+
+	test.deepEqual(
+		c.min(),
+		'58',
+		'subtracting seconds moves minutes backward'
+	);
 
 	test.done();
-
 };
 
 exports.clone = function clone(test) {
