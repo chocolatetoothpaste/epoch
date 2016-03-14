@@ -15,6 +15,7 @@ Something weird happened right around version 0.2.6 or 0.2.7 that changed the wa
 
 The epoch.from() method is reinstated, epoch.diff() will be introduced with new functionality in a future version.  Please update your code.
 
+[Support Development](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GRFU5X5WPWR6E)
 
 ### Easy to use
 	npm install epoch.js

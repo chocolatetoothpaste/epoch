@@ -1,4 +1,4 @@
-(function (exports) {
+(function() {
 "use strict";
 
 // constructor wrapper
@@ -59,6 +59,7 @@ Epoch.prototype.format = function format( str ) {
 	// $1 is value of escaped text, if used
 	// $2 is repeating format token
 	// $3 is "o" if ordinal suffix is to be used
+	// return str.replace( rx, ( $0, $1, $2, $3 ) => {
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
 		// $1 will only be defined if escaped text was found
 
@@ -70,6 +71,8 @@ Epoch.prototype.format = function format( str ) {
 			// check for ordinal suffix in format
 			// ($3 would be undefined if $0 was escaped text)
 			return ( $3 === "o"
+				// ? self.ordinal.call( this, f[$0.replace( "o", "" )].call(this) )
+				// : f[$0].call(this)
 				? self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
 				: f[$0].call(self)
 			);
@@ -508,4 +511,4 @@ Epoch.prototype._lang = {
 	}
 };
 
-})( typeof window === 'undefined' ? module.exports : window );
+})();
