@@ -26,7 +26,7 @@ function Epoch( format, lang ) {
 		this.native = new Date( format.time() );
 	}
 	else if( format ) {
-		this.native = new Date( this.parse( format ) );
+		this.native = this.parse( format );
 	}
 	else {
 		this.native = new Date();
@@ -56,12 +56,11 @@ Epoch.prototype.format = function format( str ) {
 		rx = /\[([^\[]*)\]|(\w)\2*(o)?/g;
 
 	// $0 is format received
-	// $1 is value of escaped text, if used
-	// $2 is repeating format token
+	// $1 is value of escaped text, only defined if escaped text was found
+	// $2 is format token
 	// $3 is "o" if ordinal suffix is to be used
 	// return str.replace( rx, ( $0, $1, $2, $3 ) => {
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
-		// $1 will only be defined if escaped text was found
 
 		if( typeof $1 === "undefined" ) {
 			if( typeof f[$0] !== "function" && typeof $3 === "undefined" ) {
@@ -94,12 +93,30 @@ Epoch.prototype.parse = function parse( date ) {
 	// /\b(?:(?:Mon)|(?:Tues?)|(?:Wed(?:nes)?)|(?:Thur?s?)|(?:Fri)|(?:Sat(?:ur)?)|(?:Sun))(?:day)?\b[:\-,]?\s*[a-zA-Z]{3,9}\s+\d{1,2}\s*,?\s*\d{4}/i;
 
 	// standard YYYY-MM-DD format, with common separators
-	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test( date ) ){
+	// console.log(date);
+	// console.log(/^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*[.:]\d{2}[.:]\d{2}[.:]\d{2}$/.test( date ))
+	var ret;
+	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test( date ) ) {
+		var m = date.match(/^(\d{4})[.,-_](\d{2})[.,-_](\d{2})$/);
+		m.shift();
+		delete m.index;
+		delete m.input;
 		var d = new Date();
-		date += ' ' + [ d.getHours(), d.getMinutes(), d.getSeconds() ].join(':');
+		ret = new Date( m[0], parseInt(m[1]) - 1, m[2], d.getHours(), d.getMinutes(), d.getSeconds() );
+	}
+	else if ( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*\d{2}[.:]\d{2}[.:]\d{2}$/.test( date ) ) {
+		var m = date.match(/^(\d{4})[.,-_](\d{2})[.,-_](\d{2})\s*(\d{2})[.:](\d{2})[.:](\d{2})$/);
+		m.shift();
+		delete m.index;
+		delete m.input;
+		// var halves = date.split(/\s+/);
+		ret = new Date(m[0], parseInt(m[1]) - 1, m[2], m[3], m[4], m[5]);
+	}
+	else {
+		ret = new Date(date);
 	}
 
-	return date;
+	return ret;
 };
 
 
@@ -380,6 +397,16 @@ Epoch.prototype.sqlsod = function sqlsod() {
 // format accepted by SQL DATETIME column type
 Epoch.prototype.datetime = function datetime() {
 	return this.format('YYYY-MM-DD hh:mm:ss');
+};
+
+Epoch.prototype.fdow = function fdow() {
+	var d = this.day();
+
+	if( d !== 0 ) {
+		this.date('-' + d);
+	}
+
+	return this;
 };
 
 // return number + ordinal suffix for num
