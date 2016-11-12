@@ -92,25 +92,15 @@ Epoch.prototype.parse = function parse( date ) {
 	// possible additional date parser
 	// /\b(?:(?:Mon)|(?:Tues?)|(?:Wed(?:nes)?)|(?:Thur?s?)|(?:Fri)|(?:Sat(?:ur)?)|(?:Sun))(?:day)?\b[:\-,]?\s*[a-zA-Z]{3,9}\s+\d{1,2}\s*,?\s*\d{4}/i;
 
-	// standard YYYY-MM-DD format, with common separators
-	// console.log(date);
-	// console.log(/^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*[.:]\d{2}[.:]\d{2}[.:]\d{2}$/.test( date ))
+	// standard YYYY-MM-DD (optional hh:mm:ss) format, with common separators
 	var ret;
-	if( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*$/.test( date ) ) {
-		var m = date.match(/^(\d{4})[.,-_](\d{2})[.,-_](\d{2})$/);
+	var YYYYMMDDhhmmss = /^(\d{4})[.,-_](\d{2})[.,-_](\d{2})(?:\s*(\d{2})[.:](\d{2})[.:](\d{2}))?$/;
+	if ( YYYYMMDDhhmmss.test( date ) ) {
+		var m = date.match(YYYYMMDDhhmmss);
 		m.shift();
 		delete m.index;
 		delete m.input;
-		var d = new Date();
-		ret = new Date( m[0], parseInt(m[1]) - 1, m[2], d.getHours(), d.getMinutes(), d.getSeconds() );
-	}
-	else if ( /^\d{4}[.,-_]\d{2}[.,-_]\d{2}\s*\d{2}[.:]\d{2}[.:]\d{2}$/.test( date ) ) {
-		var m = date.match(/^(\d{4})[.,-_](\d{2})[.,-_](\d{2})\s*(\d{2})[.:](\d{2})[.:](\d{2})$/);
-		m.shift();
-		delete m.index;
-		delete m.input;
-		// var halves = date.split(/\s+/);
-		ret = new Date(m[0], parseInt(m[1]) - 1, m[2], m[3], m[4], m[5]);
+		ret = new Date(m[0], parseInt(m[1]) - 1, m[2], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );
 	}
 	else {
 		ret = new Date(date);

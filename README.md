@@ -1,20 +1,6 @@
 epoch.js - Wonderful Date Formatting and Calculations
 =====================================================
 
-**Cool new methods**
-
-`epoch.sqlsod()` and `epoch.sqleod()` were added for conveniently creating an SQL datetime value that is start of day or end of day.  See "Common Format Methods" section below.
-
-**Important Notice**
-
-A native date object was stored internally at epoch._d.  If you were using this (probably not, it was undocumented) it is no longer stored there.  Use epoch.native if you need to access the native object.
-
-Something weird happened right around version 0.2.6 or 0.2.7 that changed the way epoch was exported.  I don't know or understand what changed, so the code to export had to be changed.  Because of this, a breaking change is possible.  See "Easy to use" section below for how to correctly require and use epoch.  Unit testing is being built to make sure this mistake does not happen again.  Sorry for the inconvenience.
-
-**Breaking change**
-
-The epoch.from() method is reinstated, epoch.diff() will be introduced with new functionality in a future version.  Please update your code.
-
 [Support Development](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GRFU5X5WPWR6E)
 
 ### Easy to use
