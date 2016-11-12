@@ -57,12 +57,11 @@ Epoch.prototype.format = function format( str ) {
 		rx = /\[([^\[]*)\]|(\w)\2*(o)?/g;
 
 	// $0 is format received
-	// $1 is value of escaped text, only defined if escaped text was found
-	// $2 is format token
+	// $1 is value of escaped text, undefined if no escaped text was found
+	// $2 is matched format token (repeated letters that are the same)
 	// $3 is "o" if ordinal suffix is to be used
 	// return str.replace( rx, ( $0, $1, $2, $3 ) => {
 	return str.replace( rx, function( $0, $1, $2, $3 ) {
-
 		if( typeof $1 === "undefined" ) {
 			if( typeof f[$0] !== "function" && typeof $3 === "undefined" ) {
 				throw new Error("Invalid format: " + $0);
@@ -70,11 +69,9 @@ Epoch.prototype.format = function format( str ) {
 
 			// check for ordinal suffix in format
 			// ($3 would be undefined if $0 was escaped text)
-			return ( $3 === "o"
-				// ? self.ordinal.call( this, f[$0.replace( "o", "" )].call(this) )
-				// : f[$0].call(this)
-				? self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
-				: f[$0].call(self)
+			return ( typeof $3 === 'undefined'
+				? f[$0].call(self)
+				: self.ordinal.call( self, f[$0.replace( "o", "" )].call(self) )
 			);
 		}
 
@@ -113,7 +110,7 @@ Epoch.prototype.parse = function parse( date ) {
 		m[0] = this.lang.mon.indexOf(m[0].charAt(0).toUpperCase() + m[0].slice(1,3).toLowerCase());
 		ret = new Date(m[2], m[0], m[1], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );	
 	}
-	
+
 	else {
 		ret = new Date(date);
 	}
