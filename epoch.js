@@ -90,7 +90,21 @@ Epoch.prototype.format = function format( str ) {
 
 Epoch.prototype.parse = function parse( date ) {
 	// possible additional date parser
-	// /\b(?:(?:Mon)|(?:Tues?)|(?:Wed(?:nes)?)|(?:Thur?s?)|(?:Fri)|(?:Sat(?:ur)?)|(?:Sun))(?:day)?\b[:\-,]?\s*[a-zA-Z]{3,9}\s+\d{1,2}\s*,?\s*\d{4}/i;
+	var nat_lang = /\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/i;
+	var trans = {
+		jan: 0,
+		feb: 1,
+		mar: 2,
+		apr: 3,
+		may: 4,
+		jun: 5,
+		jul: 6,
+		aug: 7,
+		sep: 8,
+		oct: 9,
+		nov: 10,
+		dec: 11
+	};
 
 	// standard YYYY-MM-DD (optional hh:mm:ss) format, with common separators
 	var ret;
@@ -101,6 +115,16 @@ Epoch.prototype.parse = function parse( date ) {
 		delete m.index;
 		delete m.input;
 		ret = new Date(m[0], parseInt(m[1]) - 1, m[2], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );
+	}
+
+	else if( nat_lang.test(date) ) {
+		var m = date.match(nat_lang);
+		m.shift();
+		delete m.index;
+		delete m.input;
+		
+		m[0] = trans[m[0].substr(0,3).toLowerCase()];
+		ret = new Date(m[2], m[0], m[1], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );	
 	}
 	else {
 		ret = new Date(date);

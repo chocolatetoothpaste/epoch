@@ -4,35 +4,42 @@ epoch.js - Wonderful Date Formatting and Calculations
 [Support Development](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GRFU5X5WPWR6E)
 
 ### Easy to use
-	npm install epoch.js
+    npm install epoch.js
 
-	var epoch = require('epoch.js');
+    var epoch = require('epoch.js');
 
-	var e = epoch(); // defaults to current date/time
-	var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
+    var e = epoch(); // defaults to current date/time
+    var date = epoch( '2013-12-08 12:34:56' ); // setting date/time
 
-	// epoch now accepts a native Date object as an argument (and should have a long time ago)
+    // epoch now accepts a native Date object as an argument (and should have a long time ago)
 
-	// months numbers run from 0 - 11 in native object
-	var obj = new Date(1995, 11, 17);
-	epoch(obj).format('MMM D, YYYY'); // Dec 17, 1995
+    // months numbers run from 0 - 11 in native object
+    var obj = new Date(1995, 11, 17);
+    epoch(obj).format('MMM D, YYYY'); // Dec 17, 1995
 
-	// clone an epoch object
-	var f = epoch(date);
-	f.format('YYYY-MM-DD'); // 2013-12-08
+    // clone an epoch object
+    var f = epoch(date);
+    f.format('YYYY-MM-DD'); // 2013-12-08
+
+
+    // Robust parsing:
+    var e = epoch('Friday, November 11th 2016');
+    var f = epoch('Sat, November 12th 2016 12:04:05');
+    var g = epoch('dec 21 2017');
+    var h = epoch('november 3 2017 8:15:16');
 
 
 ### Familiar formatting tokens
 
-	date.format('dddd MMM D, YYYY'); // Sunday Dec 8, 2013
-	epoch('2015-05-04').format('MMMM [the] Do [be with you]') // May the 4th be with you
+    date.format('dddd MMM D, YYYY'); // Sunday Dec 8, 2013
+    epoch('2015-05-04').format('MMMM [the] Do [be with you]') // May the 4th be with you
 
 
 ### Intervals
 
-	date.from('2012-12-08'); // 1 year ago
-	date.from('2019-12-08'); // in 6 years
-	date.from('2013-12-08 12:34:48'); // less than a minute ago
+    date.from('2012-12-08'); // 1 year ago
+    date.from('2019-12-08'); // in 6 years
+    date.from('2013-12-08 12:34:48'); // less than a minute ago
 
 
 ### Common Format Methods

@@ -418,6 +418,94 @@ exports.shorthand = function shorthand(test) {
 	test.done();
 };
 
+exports.parsing = function parsing(test) {
+	var e = epoch('Friday, November 11th 2016');
+	var f = epoch('Sat, November 12th 2016 12:04:05');
+	var g = epoch('dec 21 2017');
+	var h = epoch('november 3 2017 8:15:16');
+
+
+	test.deepEqual(
+		e.month(),
+		11,
+		'long nat lang date month'
+	);
+
+	test.deepEqual(
+		e.date(),
+		11,
+		'long nat lang date date'
+	);
+
+	test.deepEqual(
+		e.year(),
+		2016,
+		'long nat lang date year'
+	);
+
+	test.deepEqual(
+		f.year(),
+		2016,
+		'long nat lang datetime year'
+	);
+
+	test.deepEqual(
+		f.month(),
+		11,
+		'long nat lang datetime month'
+	);
+
+	test.deepEqual(
+		f.date(),
+		12,
+		'long nat lang datetime date'
+	);
+
+	test.deepEqual(
+		f.format('hh:mm:ss'),
+		'12:04:05',
+		'long nat lang datetime time'
+	);
+
+	test.deepEqual(
+		g.month(),
+		12,
+		'short m/d/y month'
+	);
+	
+	test.deepEqual(
+		g.date(),
+		21,
+		'short m/d/y dat'
+	);
+	
+	test.deepEqual(
+		g.year(),
+		2017,
+		'short m/d/y year'
+	);
+	
+	test.deepEqual(
+		g.day(),
+		4,
+		'short m/d/y dow'
+	);
+	
+	test.deepEqual(
+		g.format('YYYY-MM-DD hh:mm:ss'),
+		'2017-12-21 00:00:00',
+		'short m/d/y sql datetime'
+	);
+	
+	test.deepEqual(
+		h.format('YYYY-MM-DD hh:mm:ss'),
+		'2017-11-03 08:15:16',
+		'long month date with time'
+	);
+
+	test.done();
+};
+
 exports.clone = function clone(test) {
 	var e = epoch('2015-12-12 12:34:56');
 	var f = epoch(e);
