@@ -6,12 +6,13 @@
   "authors": [
     "Ross Paskett <ross@paskett.me>"
   ],
-  "description": "Simple, elegant date/time formatting and manipulation",
+  "description": "Simple, elegant Date/Time formatting library",
   "keywords": [
     "date",
     "time",
-    "date-time",
     "timestamp",
+    "datetime",
+    "date-time",
     "date formatting",
     "sql date",
     "epoch",

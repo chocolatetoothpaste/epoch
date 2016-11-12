@@ -14,6 +14,7 @@
     "date",
     "time",
     "timestamp",
+    "datetime",
     "date-time",
     "date formatting",
     "sql date",
