@@ -88,10 +88,19 @@ Epoch.prototype.format = function format( str ) {
 
 Epoch.prototype.parse = function parse( date ) {
 	// natural language date formats (several variations)
-	var nat_lang = /\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/i;
+	// var nat_lang = /\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/i;
+
+	var nat_lang = new RegExp([
+		/\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?/,
+		/((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)/,
+		/\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/,
+	].map(function(r) {return r.source}).join(''), 'i');
 
 	// standard YYYY-MM-DD (optional hh:mm:ss) format, with common separators
 	var ret;
+	
+	// start of ISO 8601 format(s)
+	// var YYYYMMDDhhmmss = /^(\d{4})[.,-_](\d{2})[.,-_](\d{2})(?:(?:\s|T)*(\d{2})[.:](\d{2})[.:](\d{2})(?:Z|\+\d{2}\:\d{2})*)?$/;
 	var YYYYMMDDhhmmss = /^(\d{4})[.,-_](\d{2})[.,-_](\d{2})(?:\s*(\d{2})[.:](\d{2})[.:](\d{2}))?$/;
 	if ( YYYYMMDDhhmmss.test( date ) ) {
 		var m = date.match(YYYYMMDDhhmmss);
@@ -119,7 +128,7 @@ Epoch.prototype.parse = function parse( date ) {
 };
 
 
-Epoch.prototype.from = Epoch.prototype.diff = function from( date, rel ) {
+Epoch.prototype.from = function from( date, rel ) {
 	rel = rel || { pre: this.lang.from.pre, suf: this.lang.from.suf };
 	date = ( date ? new Date( this.parse( date ) ) : new Date() );
 
