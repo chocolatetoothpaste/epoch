@@ -16,6 +16,48 @@ else {
 	window.epoch = epoch;
 }
 
+epoch.convert = function convert(secs, trim) {
+	var ret;
+
+	if( typeof secs === 'number' ) {
+
+		if( typeof trim === 'undefined' ) {
+			trim = false;
+		}
+
+		// if( typeof fill === 'undefined' ) {
+		// 	fill = false;
+		// }
+
+		var secs = parseInt(secs, 10);
+
+		var form = [ Math.floor(secs / 3600) % 24, Math.floor(secs / 60) % 60, secs % 60 ]
+			.map( function( v ) { return v < 10 ? '0' + v : v } );
+
+
+		if( trim ) {
+			form = form.filter( function( v, i ) { return v !== '00' || i > 0 } );
+		}
+
+		ret = form.join(':');
+	}
+
+	else {
+		secs = secs.split(':').map(function(v) { return parseInt(v, 10); });
+		var mult = [ 86400, 3600, 60, 1 ];
+
+		var sum = 0;
+
+		mult.slice( mult.length - ( secs.length) ).map( function(v, i ) {
+			sum += v * secs[i];
+		});
+
+		ret = sum;
+	}
+
+	return ret;
+};
+
 
 // constructor
 function Epoch( format, lang ) {
@@ -88,20 +130,17 @@ Epoch.prototype.format = function format( str ) {
 
 Epoch.prototype.parse = function parse( date ) {
 	// natural language date formats (several variations)
-	// var nat_lang = /\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/i;
-
 	var nat_lang = new RegExp([
 		/\b(?:(?:(?:mon)|(?:tues?)|(?:wed(?:nes)?)|(?:thur?s?)|(?:fri)|(?:sat(?:ur)?)|(?:sun))(?:day)?\b[:\-,]?\s*)?/,
 		/((?:jan|feb)?r?(?:uary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|oct(?:ober)?|(?:sept?|nov|dec)(?:ember)?)/,
 		/\s+(\d{1,2})(?:st|rd|th)?\s*,?\s*(\d{4})(?:\s*(\d{1,2})[.:](\d{2})[.:](\d{2}))?/,
 	].map(function(r) {return r.source}).join(''), 'i');
 
-	// standard YYYY-MM-DD (optional hh:mm:ss) format, with common separators
-	var ret;
-	
 	// start of ISO 8601 format(s)
-	// var YYYYMMDDhhmmss = /^(\d{4})[.,-_](\d{2})[.,-_](\d{2})(?:(?:\s|T)*(\d{2})[.:](\d{2})[.:](\d{2})(?:Z|\+\d{2}\:\d{2})*)?$/;
 	var YYYYMMDDhhmmss = /^(\d{4})[.,-_](\d{2})[.,-_](\d{2})(?:\s*(\d{2})[.:](\d{2})[.:](\d{2}))?$/;
+
+	var ret;
+
 	if ( YYYYMMDDhhmmss.test( date ) ) {
 		var m = date.match(YYYYMMDDhhmmss);
 		m.shift();
@@ -116,8 +155,9 @@ Epoch.prototype.parse = function parse( date ) {
 		delete m.index;
 		delete m.input;
 
-		m[0] = this.lang.mon.indexOf(m[0].charAt(0).toUpperCase() + m[0].slice(1,3).toLowerCase());
-		ret = new Date(m[2], m[0], m[1], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );	
+		var mon = m[0].charAt(0).toUpperCase() + m[0].slice(1,3).toLowerCase();
+		mon = this.lang.mon.indexOf(mon);
+		ret = new Date(m[2], mon, m[1], ( m[3] || 0), (m[4] || 0), (m[5] || 0) );	
 	}
 
 	else {

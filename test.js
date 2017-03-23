@@ -106,6 +106,58 @@ exports.formats = function formats(test) {
 	test.done();
 };
 
+exports.convert = function convert(test) {
+	test.deepEqual(
+		epoch.convert(23423),
+		'06:30:23',
+		'hour/min/sec'
+	);
+
+	test.deepEqual(
+		epoch.convert(375, true),
+		'06:15',
+		'trim min/sec'
+	);
+
+	test.deepEqual(
+		epoch.convert(180),
+		'00:03:00',
+		'no trim min/sec'
+	);
+
+	test.deepEqual(
+		epoch.convert(16),
+		'00:00:16',
+		'no trim sec'
+	);
+
+	// test.deepEqual(
+	// 	epoch.convert(49, true),
+	// 	'49',
+	// 	'trim sec'
+	// );
+
+	test.deepEqual(
+		epoch.convert('05:12'),
+		312,
+		'minutes to seconds'
+	);
+
+	test.deepEqual(
+		epoch.convert('03:01:12'),
+		10872,
+		'hours to seconds'
+	);
+
+	test.deepEqual(
+		epoch.convert('04:32:09:38'),
+		461378,
+		'days to seconds'
+	);
+
+	test.done();
+}
+
 exports.utility = function utility(test) {
 	var a = epoch('2010-07-31 12:34:56');
 	var c = epoch('1984-02-08 08:59:42');

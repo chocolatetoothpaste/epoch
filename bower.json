@@ -1,7 +1,7 @@
 {
   "name": "epoch.js",
   "main": "epoch.js",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "homepage": "https://github.com/chocolatetoothpaste/epoch",
   "authors": [
     "Ross Paskett <ross@paskett.me>"
